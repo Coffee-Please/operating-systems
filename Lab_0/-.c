@@ -1,11 +1,17 @@
+//Lab_0 
+//created by Priya Singh on 1/25/2020
+//COMP 322/L Spring 2020 Prof. Ilia Benson
 
 #include <stdio.h>
 
 int main()
+
 {
-    printf("Hello World");
+
+//while input
+
 //Local Variables
- 
+
 //Get user input
 
 //Read and store binary
@@ -15,6 +21,10 @@ int main()
 //Convert to Decimal
 
 //Format and Print to stdout
+printf("Hello World");
+
+//end while
 
 return 0;
+
 }
