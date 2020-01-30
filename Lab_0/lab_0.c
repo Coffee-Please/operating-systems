@@ -6,9 +6,21 @@
 
 int main()
 {
+//Local Variables
+	String infile;
+	int binary;
 
 //Get user input
-	printf("Hello World!");
+//Pad missing length
+
+//Format
+	printf("Original\tASCII\tDecimal\tParity\tT.Error\n");
+	printf("--------\t-----\t-------\t------\t-------\n");
+
+//Conversions
+
+//Check isascii()
+//else -> man isascii
 
 	return 0;
 
