@@ -28,10 +28,6 @@ int main(int num_of_args, char **args)
 			printf("Exiting....\n");
 
 		}//end if
-		else
-		{
-			printf("File open success....\n");
-		}//end else
 
 	//Read file
 
@@ -50,10 +46,6 @@ int main(int num_of_args, char **args)
 			printf("Exiting....\n");
 
 		}//end if
-		else
-		{
-			printf("File open success....\n");
-		}//end else
 
 	//Read file
 
