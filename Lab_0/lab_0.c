@@ -1,15 +1,19 @@
 //Lab 0 for COMP 322/L
 //Created by Priya Singh on 1/29/2020
 
-//open file -> read 8bits; pad if necessary -> convert -> repeat while !EOF
+//read 8bits; pad if necessary -> convert -> repeat while !EOF
 
 #include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 int main(int num_of_args, char **args)
 {
 //Local Variables
-	char infile[20];
-	FILE *fp;
+	char infile[10];
+	char buffer[10];
+	int fp;
+	int rd;
 
 //If filename not provided, get filename
 	if(num_of_args == 1)
@@ -19,55 +23,73 @@ int main(int num_of_args, char **args)
 		printf("%s\n", infile);
 
 	//Open file
-		fp = fopen(infile, "r");
+		fp = open(infile, O_RDONLY);
+		printf("fp :%d\n", fp);
 
 	//Does the file exist?
-		if(fp == NULL)
+		if(fp == -1)
 		{
 			printf("Error: File not found.\n");
 			printf("Exiting....\n");
 
 		}//end if
-
-	//Read file
-
 	}//end if
 
 //else, arg[1] is the file name
 	else
 	{
 	//Open file
-		fp = fopen(args[1], "r");
+		fp = open(args[1], O_RDONLY);
 
 	//Does the file exist?
-		if(fp == NULL)
+		if(fp == -1)
 		{
 			printf("Error: File not found.\n");
 			printf("Exiting....\n");
 
 		}//end if
-
-	//Read file
-
 	}//end else
 
-
-
 //Format
-	printf("Original\tASCII\tDecimal\tParity\tT.Error\n");
-	printf("--------\t-----\t-------\t------\t-------\n");
+	printf("Original\tASCII\tDecimal\tParity\n");
+	printf("--------\t-----\t-------\t-------\n");
 
-//Conversions
-//bin_to_dec();
+//While, !EOF, read and convert
+	while(rd != 0)
+	{
+	//Read file
+		rd = read(fp, buffer, 9);
 
-//bin_to_ascii();
+		if(rd < 9)
+		{
+//		//Pad to size---------------------------------------------------------
+//			for(int i = rd + 1; i < 9; i++)
+//			{
+//				buffer[i] = '0';
+//			}//end for
 
-//calc_parity()
+			buffer[rd] = '\0';
+			printf("%s\n", buffer);
 
-//check_true_false();
+			break;
+		}//end if
+
+		buffer[9] = '\0';
+
+		printf("%s\n", buffer);
+	}//end while
+
+	//Conversions
+	//bin_to_dec();
+
+	//bin_to_ascii();
+
+	//calc_parity()
+
+	//check_true_false();
 
 //Close file
-	fclose(fp);
+//	close(fp);
 
 	return 0;
 
