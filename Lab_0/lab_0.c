@@ -1,11 +1,13 @@
 //Lab 0 for COMP 322/L
 //Created by Priya Singh on 1/29/2020
 
-//read 8bits; pad if necessary -> convert -> repeat while !EOF
+//convert
 
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <ctype.h>
+#include <math.h>
 
 int main(int num_of_args, char **args)
 {
@@ -62,49 +64,132 @@ int main(int num_of_args, char **args)
 
 		if(rd < 9)
 		{
-//		//Pad to size---------------------------------------------------------
-//			for(int i = rd + 1; i < 9; i++)
-//			{
-//				buffer[i] = '0';
-//			}//end for
+		//Pad missing bytes
+			while(rd < 9)
+			{
+				buffer[rd - 1] = '0';
+				rd++;
+			}//end for
 
 			buffer[rd] = '\0';
-			printf("%s\n", buffer);
+			printf("%s\t", buffer);
+			convert_ascii(buffer);
+			convert_dec(buffer);
 
 			break;
 		}//end if
 
-		buffer[9] = '\0';
+		buffer[rd] = '\0';
 
-		printf("%s\n", buffer);
-	}//end while
+		printf("%s\t", buffer);
 
 	//Conversions
-	//bin_to_dec();
+		convert_ascii(buffer);
 
-	//bin_to_ascii();
+		convert_dec(buffer);
 
-	//calc_parity()
+//		calc_parity();
 
-	//check_true_false();
+	}//end while
 
 //Close file
-//	close(fp);
+	close(fp);
 
 	return 0;
 
 }//end main
 
-//Read file
 
-	//Pad missing length
+//CONVERT BINARY TO ASCII
+void convert_ascii(char buffer[])
+{
 
-//Convert to ASCII
-//Check isascii()
-//else -> man isascii
+//Local Variables
+	int hex = 0;
+	int power = 6;
 
-//Convert to Decimal
+//Convert
+	for(int i = 1; i < 8; i++)
+	{
+		hex += (buffer[i] - 48) * pow(2, power--);
 
-//Parity Bit
+	}//end for
 
-//Determine True/False
+//Check
+	if(isascii(hex))
+	{
+	//Print
+		printf("%c\t", hex);
+
+	}//end if
+
+	else
+	{
+	//Print
+		printf("%x\t", hex);
+	}//end else
+
+}//end bin_to_ascii
+
+
+//CONVERT BINARY TO DECIMAL
+void convert_dec(char buffer[])
+{
+//Local Variables
+	int dec = 0;
+	int power = 6;
+
+//Convert
+	for(int i = 1; i < 8; i++)
+	{
+		dec += (buffer[i] - 48) * pow(2, power--);
+
+	}//end for
+
+//Print
+	printf("%d\n", dec);
+
+}//end bin_to dec
+
+
+////CALCULATE PARITY BITS
+//void calc_parity(char buffer[])
+//{
+////Local Variables
+//	int parity_bit = 0;
+//	int result = 0;
+//
+////Convert
+//	for(int i = 0; parity_bit < 8; i++)
+//	{
+//		parity_bit = pow(2, i);
+//		printf("parity bit: %d\n", parity_bit);
+//
+//
+//		for(int j = 0; j < parity_bit; j++)
+//		{
+//			//go for parity bit # byte
+//			result += 
+//
+//		}//end for
+//
+//		for()
+//		{
+//			//skip for parity bit # of bytes
+//			
+//		}//end for
+//
+//
+//
+//	}//end for
+//
+////Print
+//
+////	printf("ODD\n");
+//
+////	printf("EVEN\n");
+//
+//
+//}//end calc_parity
+
+//PRINT
