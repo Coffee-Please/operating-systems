@@ -1,19 +1,18 @@
-
 322 Lab 0 README 
 Created by Priya Singh
 
 This README documents the process of the creation of Lab 0.
-===
+---
 
 Feb 2, 2020
 
-Program accepts command line args.
+Program accepts command line arguments.
 
 Added user input function if missing file name.
 
 Added error checking if input file is missing.
 
-Commited everthing to GitHub.
+Committed everything to GitHub.
 
 Updated Notes in GitHub.
 ---
@@ -22,7 +21,7 @@ Feb 3, 2020
 
 Double checked fopen function.
 
-Tried using read, but mix with pointer casued trouble, so changed fopen to open and discarded all pointers.
+Tried using read, but mix with pointer caused trouble, so changed fopen to open and discarded all pointers.
 
 Read works, cleaned up garbage at end of file.
 ---
@@ -35,7 +34,7 @@ Added functions for converting binary to decimal and ASCII. Code may seem redund
 
 Optimizing will come later if time.
 
-Everything is commited to GitHub.
+Everything is committed to GitHub.
 ---
 
 Feb 5, 2020
@@ -50,7 +49,7 @@ Looking into using scanf() instead of read() to solve whitespace and newline iss
 
 Scrapped all scanf()s is exchange for fget to fulfill stdin requirement.
 
-Confused as to if I need to some how account for identifying if the second command line argument if a binary or filename inputs.
+Confused as to if I need to somehow account for identifying if the second command line argument if a binary or filename inputs.
 (E.g. ./demo input.txt vs. ./demo 101011100)  
 
 Trying to follow assignment instructions, manually converting non-printable ASCII chars into mnemonic equivalent. Yay.
@@ -63,7 +62,8 @@ Scrapped entire function to get binary string and redid it.
 Feb 6, 2020
 (After 6AM)
 
-Fixed processing command arguements to be specific in what it is accepting. If there is a filename, all other args are ignored.
+Fixed processing command arguments to be specific in what it is accepting. If there is a filename, all other arguments are ignored.
 
 If it starts with binary, it will finish in binary unless there is something other than 0 or 1. Then it will abort.
 ---
+
