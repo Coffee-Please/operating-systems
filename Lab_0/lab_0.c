@@ -40,52 +40,67 @@ int main(int num_of_args, char **args)
 
 	//Open file
 		fp = open(infile, O_RDONLY);
+
+		//Does the file exist?
+		if(error_1(fp))
+		{
+			printf("Error: File not found.\n");
+			printf("Exiting....\n");
+
+			return 0;
+		}//end if
+
+		//Get file size
+			rd = read(fp, buffer, bytes);
+
+			format_and_print(buffer, rd);
 	}//end if
 
 //else, arg[1] is the file name, or given binarys, or file name is - or not given
 	else
 	{
-	//check if arg[i] -> binary------------------------------------------------------------------do
+	//Open file
+		fp = open(args[1], O_RDONLY);
 
-//	//check if all is binary, space, or \n
-//		int counter = 0;
-//printf("here1");
-//
-//		for(int i = 1; i < num_of_args; i++)
-//		{printf("here2");
-//
-//			for(int j = 0; j < strlen(args[i]); j++)
-//			{printf("buffer[%d]: %s args[%d]: %s\n", counter, buffer[counter], i, args[i][j]);
-//
-//				buffer[counter] = args[i][j];
-//
-//				printf("buffer[%d]: %s\n", i, buffer[i - 1]);
-//
-//				if(buffer[counter] != '1' && buffer[counter] != '0' && buffer[counter] != '\n' && buffer[counter] != ' ')
-//				{
-				//Open file
-					fp = open(args[1], O_RDONLY);
+		//if args[1] is a file
+		if(!error_1(fp))
+		{
+		//Get file size
+			rd = read(fp, buffer, bytes);
 
-				//Does the file exist?
-					if(error_1(fp))
+			format_and_print(buffer, rd);
+		}//end if
+
+		else
+		{
+		//binary
+			int counter = 0;
+
+			for(int i = 1; i < num_of_args; i++)
+			{
+				for(int j = 0; j < (int)strlen(args[i]); j++)
+				{
+					buffer[counter] = args[i][j];
+
+					//Something other than binary  is in the string
+					if(buffer[counter] != 49 && buffer[counter] != 48)
 					{
 						return 0;
 					}//end if
 
-					//Get file size
-					rd = read(fp, buffer, bytes);
-//
-//				}//end if
-//				counter++;
-//			}//end for
-//
-//			buffer[counter] = ' ';
-//			counter++;
-//
-//		}//end for----------------------------------------------------------------------------
-	}//end else
+					counter++;
+				}//end for
 
-	format_and_print(buffer, rd);
+				buffer[counter] = ' ';
+				counter++;
+
+			}//end for
+
+			buffer[counter] = '\0';
+
+			format_and_print(buffer, counter);
+		}//end else
+	}//end else
 
 //Close file
 	close(fp);
@@ -99,8 +114,6 @@ bool error_1(int fp)
 {
 	if(fp == -1)
 	{
-		printf("Error: File not found.\n");
-		printf("Exiting....\n");
 		return true;
 	}//end if
 
@@ -170,8 +183,6 @@ void format_and_print(char buffer[], int file_len)
 	//Reset
 		string_len = 0;
 		cursor++;
-
-		getchar();
 
 	}//end while
 }//end print
