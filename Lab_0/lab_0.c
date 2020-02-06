@@ -81,6 +81,13 @@ int main(int num_of_args, char **args)
 				for(int j = 0; j < (int)strlen(args[i]); j++)
 				{
 					buffer[counter] = args[i][j];
+
+					//Something other than binary  is in the string
+					if(buffer[counter] != 49 && buffer[counter] != 48)
+					{
+						return 0;
+					}//end if
+
 					counter++;
 				}//end for
 
