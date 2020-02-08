@@ -67,3 +67,7 @@ Fixed processing command arguments to be specific in what it is accepting. If th
 If it starts with binary, it will finish in binary unless there is something other than 0 or 1. Then it will abort.
 ---
 
+Feb 8, 2020
+
+Optimized function to convert to ASCII. Replaced if/else brute force with an array and lookup.
+---
