@@ -70,4 +70,6 @@ If it starts with binary, it will finish in binary unless there is something oth
 Feb 8, 2020
 
 Optimized function to convert to ASCII. Replaced if/else brute force with an array and lookup.
+
+Reduced code where I could. Tried to see the easier patterns to exploit.
 ---

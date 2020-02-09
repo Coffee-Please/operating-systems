@@ -1,7 +1,6 @@
 //Created by Priya Singh on 1/29/2020
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -9,7 +8,6 @@
 #include <string.h>
 
 //PROTOTYPES
-bool error_1(int fp);
 void format_and_print(char buffer[], int file_len);
 void convert_ascii(int dec);
 void convert_dec(char buffer[]);
@@ -19,40 +17,18 @@ void calc_parity(char buffer[]);
 int main(int num_of_args, char **args)
 {
 //Local Variables
-	char infile[20];
 	char buffer[100];
 	int fp;
 	int rd;
 	int bytes = 100;
 
 //If filename not provided, get filename using stdin
-	if(num_of_args == 1)
+	if(num_of_args <= 1)
 	{
-		printf("Enter File Name: ");
+		printf("Error: Insufficient Data.\n");
+		printf("Exiting....\n");
 
-		fgets(infile, sizeof(infile), stdin);
-
-		if(infile[strlen(infile) - 1] == '\n')
-		{
-			infile[strlen(infile) - 1] = '\0';
-		}//end if
-
-	//Open file
-		fp = open(infile, O_RDONLY);
-
-		//Does the file exist?
-		if(error_1(fp))
-		{
-			printf("Error: File not found.\n");
-			printf("Exiting....\n");
-
-			return 0;
-		}//end if
-
-		//Get file size
-			rd = read(fp, buffer, bytes);
-
-			format_and_print(buffer, rd);
+		return 0;
 	}//end if
 
 //else, arg[1] is the file name, or given binarys, or file name is - or not given
@@ -62,17 +38,16 @@ int main(int num_of_args, char **args)
 		fp = open(args[1], O_RDONLY);
 
 		//if args[1] is a file
-		if(!error_1(fp))
+		if(fp != -1)
 		{
 		//Get file size
 			rd = read(fp, buffer, bytes);
-
 			format_and_print(buffer, rd);
 		}//end if
 
 		else
 		{
-		//binary
+		//binary is inputted
 			int counter = 0;
 
 			for(int i = 1; i < num_of_args; i++)
@@ -84,6 +59,9 @@ int main(int num_of_args, char **args)
 					//Something other than binary  is in the string
 					if(buffer[counter] != 49 && buffer[counter] != 48)
 					{
+						printf("Error: Incorrect Data.\n");
+						printf("Exiting....\n");
+
 						return 0;
 					}//end if
 
@@ -96,8 +74,8 @@ int main(int num_of_args, char **args)
 			}//end for
 
 			buffer[counter] = '\0';
-
 			format_and_print(buffer, counter);
+
 		}//end else
 	}//end else
 
@@ -108,26 +86,6 @@ int main(int num_of_args, char **args)
 }//end main
 
 
-//ERROR: File not found
-bool error_1(int fp)
-{
-	if(fp == -1)
-	{
-		return true;
-	}//end if
-
-	return false;
-}//end error_1
-
-
-//FORMAT
-void format()
-{
-	printf("Original\tASCII\tDecimal\tParity\n");
-	printf("--------\t-----\t-------\t-------\n");
-}//end format
-
-
 //PRINT
 void format_and_print(char buffer[], int file_len)
 {
@@ -135,7 +93,9 @@ void format_and_print(char buffer[], int file_len)
 	int cursor = 0;
 	int reader;
 
-	format();
+	printf("Original\tASCII\tDecimal\tParity\n");
+	printf("--------\t-----\t-------\t-------\n");
+
 //While it is not the end of the file
 
 	while(buffer[cursor] != '\0' && buffer[cursor] != EOF && cursor != file_len)
