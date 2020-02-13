@@ -73,3 +73,12 @@ Optimized function to convert to ASCII. Replaced if/else brute force with an arr
 
 Reduced code where I could. Tried to see the easier patterns to exploit.
 ---
+
+Feb 12, 2020
+
+Added the correct way to handle "-" and " " in arg[1].
+
+Added hex output for space and 0X7F (DEL).
+
+Did border value testing for non-printable characters.
+---
