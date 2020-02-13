@@ -22,8 +22,11 @@ int main(int num_of_args, char **args)
 	int rd;
 	int bytes = 100;
 
+//Open file
+	fp = open(args[1], O_RDONLY);
+
 //If filename not provided, get filename using stdin
-	if(num_of_args <= 1)
+	if(num_of_args <= 1 || (num_of_args == 2 && fp == -1))
 	{
 		printf("Error: Insufficient Data.\n");
 		printf("Exiting....\n");
@@ -34,9 +37,6 @@ int main(int num_of_args, char **args)
 //else, arg[1] is the file name, or given binarys, or file name is - or not given
 	else
 	{
-	//Open file
-		fp = open(args[1], O_RDONLY);
-
 		//if args[1] is a file
 		if(fp != -1)
 		{
@@ -45,12 +45,18 @@ int main(int num_of_args, char **args)
 			format_and_print(buffer, rd);
 		}//end if
 
+		//binary is inputted
 		else
 		{
-		//binary is inputted
 			int counter = 0;
+			int i = 1;
+		//arg[1] = - or " "
+			if(strcmp(args[i], "-") == 0 || strcmp(args[i], " ") == 0)
+			{
+				i++;
+			}//end if
 
-			for(int i = 1; i < num_of_args; i++)
+			for(; i < num_of_args; i++)
 			{
 				for(int j = 0; j < (int)strlen(args[i]); j++)
 				{
@@ -171,16 +177,22 @@ void convert_dec(char binary[])
 //CONVERT BINARY TO ASCII
 void convert_ascii(int hex)
 {
-	char *mnemonic[32] = {"NUL","SOH", "STX", "ETX","EOT", "ENQ", "ACK", "BEL", "BS", "TAB",
+	char *mnemonic[33] = {"NUL","SOH", "STX", "ETX","EOT", "ENQ", "ACK", "BEL", "BS", "TAB",
 		"LF", "VT", "FF", "CR", "SO", "SI", "DLE", "DC1", "DC2", "DC3", "DC4", "NAK", 
-		"SYN", "ETB", "CAN", "EM", "SUB", "ESC", "FS", "GS", "RS", "US"};
+		"SYN", "ETB", "CAN", "EM", "SUB", "ESC", "FS", "GS", "RS", "US", "SPACE"};
 
 //Check
-	if(isascii(hex) && hex > 0x1F)
+	if(isascii(hex) && hex > 0x20 && hex != 0x7F)
 	{
 	//Print
 		printf("%c\t", hex);
 	}//end if
+
+	else if(isascii(hex) && hex == 0x7F)
+	{
+	//Print
+		printf("DEL\t");
+	}//end else if
 
 	else
 	{
