@@ -82,3 +82,8 @@ Added hex output for space and 0X7F (DEL).
 
 Did border value testing for non-printable characters.
 ---
+
+Feb 15, 2020
+
+Edited repo to match name convention in Lab 1.
+---
