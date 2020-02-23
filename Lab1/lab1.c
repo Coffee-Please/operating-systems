@@ -11,12 +11,14 @@
 
 int main()
 {
-	time_t start, end, stop;
-	pid_t cpid;
+	time_t start, stop;
+	pid_t cpid, wpid;
 	int status;
+	struct tms start_tms, end_tms;
 
 //Get start time
 	time(&start);
+	times(&start_tms);
 
 //The program prints the number of seconds since..         (see time(2))
 	printf("START: %ld\n", start);
@@ -40,21 +42,16 @@ int main()
 	else if(cpid > 0)
 	{
 	//The program will wait for the child to finish            (see waitpid(2))
-		cpid = waitpid(cpid, &status, WUNTRACED);
+		wpid = waitpid(cpid, &status, WUNTRACED);
 
 	//The program and its child reports on the information
 	//The process ID of its parent              (see getppid(2))
-		printf("PPID: %d, ", getppid());
-
 	//Its own process ID                    (see getpid(2))
-		printf("PID: %d, ", getpid());
-
 	//The process ID of its child (if applicable)        (see fork(2))
-		printf("CPID: %d, ", cpid);
-
 	//The return status of its child (if applicable)        (see exit(3), waitpid(2))
-		printf("RETVAL: %d\n", status);
-	}//end if
+		printf("PPID: %d, PID: %d, CPID: %d, RETVAL: %d\n", getppid(), getpid(), wpid, status);
+
+	}//end else if
 
 //else fork fail
 	else
@@ -63,23 +60,22 @@ int main()
 		exit(EXIT_FAILURE);
 	}//end else
 
-//The program will report the following time information    (see times(2))
-//user time, system time
+	//The program will report the following time information    (see times(2))
+	//user time, system time
+		times(&end_tms);
 
-	printf("USER:, SYS: \n");
+		printf("USER: %ld, SYS: %ld\n", (__intmax_t)(end_tms.tms_utime - start_tms.tms_utime), (__intmax_t)(end_tms.tms_stime - start_tms.tms_stime));
 
-// user time of child, system time of child
-	printf("CUSER: , CSYS: \n");
+	// user time of child, system time of child
+		printf("CUSER: %ld, CSYS: %ld\n", (__intmax_t)(end_tms.tms_cutime - start_tms.tms_cutime), (__intmax_t)(end_tms.tms_cstime - start_tms.tms_cstime));
 
 //The program prints the number of seconds since..    (see time(2))
 
 	sleep(3);
 
-	time(&end);
-
-	stop = end + (end - start);
+	time(&stop);
 
 	printf("STOP: %ld\n", stop);
 
-	return 0;
+	exit(EXIT_SUCCESS);
 }//end main

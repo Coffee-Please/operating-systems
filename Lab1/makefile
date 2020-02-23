@@ -24,7 +24,7 @@ all: $(EXECUTABLES)
 # On the following lines (which _must_ start with a tab), are the commands I need to type -- 
 # each time my source file is modified.
 $(EXECUTABLES): $(SRC)
-	$(CC) $(CFLAGS) -c $(SRC)
+	$(CC) $(CFLAGS) -c $(SRC) -Wall -Wextra
 	$(CC) $(CFLAGS) -o $@ $(OBJ)
 
 # By convention, I always have a target called
