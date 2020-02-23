@@ -51,6 +51,8 @@ int main()
 	//The return status of its child (if applicable)        (see exit(3), waitpid(2))
 		printf("PPID: %d, PID: %d, CPID: %d, RETVAL: %d\n", getppid(), getpid(), wpid, status);
 
+		times(&end_tms);
+
 	}//end else if
 
 //else fork fail
@@ -62,12 +64,10 @@ int main()
 
 	//The program will report the following time information    (see times(2))
 	//user time, system time
-		times(&end_tms);
-
-		printf("USER: %ld, SYS: %ld\n", (__intmax_t)(end_tms.tms_utime - start_tms.tms_utime), (__intmax_t)(end_tms.tms_stime - start_tms.tms_stime));
+		printf("USER: %ld, SYS: %ld\n", (end_tms.tms_utime - start_tms.tms_utime), (end_tms.tms_stime - start_tms.tms_stime));
 
 	// user time of child, system time of child
-		printf("CUSER: %ld, CSYS: %ld\n", (__intmax_t)(end_tms.tms_cutime - start_tms.tms_cutime), (__intmax_t)(end_tms.tms_cstime - start_tms.tms_cstime));
+		printf("CUSER: %ld, CSYS: %ld\n", (end_tms.tms_cutime - start_tms.tms_cutime), (end_tms.tms_cstime - start_tms.tms_cstime));
 
 //The program prints the number of seconds since..    (see time(2))
 
@@ -76,6 +76,8 @@ int main()
 	time(&stop);
 
 	printf("STOP: %ld\n", stop);
+
+//	printf("tics: %ld", sysconf(_SC_CLK_TCK));
 
 	exit(EXIT_SUCCESS);
 }//end main
