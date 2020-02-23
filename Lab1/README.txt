@@ -10,7 +10,7 @@
 2/22/2020
 
 	Attended Lab and got most of the work done.
-	Coded most of the functions: Getting the processes, start and end time of process.
+	Coded most of the requirements: Getting the processes, start and end time of process.
 	Working on Correctly displaying user and system times.
 	Added the -Wall and -Wextra in the make file for my own sanity.
 ---
