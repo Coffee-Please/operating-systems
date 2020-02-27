@@ -14,3 +14,7 @@
 	Working on Correctly displaying user and system times.
 	Added the -Wall and -Wextra in the make file for my own sanity.
 ---
+2/26/2020
+
+	Checked the output with professor, everything seems good.
+---
