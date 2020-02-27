@@ -71,8 +71,6 @@ int main()
 
 //The program prints the number of seconds since..    (see time(2))
 
-	sleep(3);
-
 	time(&stop);
 
 	printf("STOP: %ld\n", stop);
