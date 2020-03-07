@@ -18,7 +18,7 @@ void func()
 
 int main(int argc, char** argv)
 {
-	pid_t child, wpid;
+	pid_t child;
 	int status;
 
 //Error
@@ -63,8 +63,6 @@ int main(int argc, char** argv)
 	{
 		printf("Fork Failed\n");
 	}//end else
-
-//free pointers
 
 	return 0;
 }//end main
