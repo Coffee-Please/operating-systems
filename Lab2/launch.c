@@ -21,45 +21,48 @@ int main(int argc, char** argv)
 	pid_t child, wpid;
 	int status;
 
+//Error
+	if (argc <= 1) {
+		fprintf(stderr, "Error: Usage: %s Not enough args\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}//end if
+
 //The program forks a child process                (see fork(2)
 	child = fork();
 
 //The parent process prints the PID of the child on stderr
-	if(child < 0)
+	if(child > 0)
 	{
-		printf("Error: CPID: %d\n", getpid());
+		fprintf(stderr, "%s: $$ = %d\n", argv[1], getpid());
+
+	//The parent prints the return value of the child on stderr    (see waitpid(2))
+		waitpid(child, &status, WUNTRACED);
+		fprintf(stderr, "%s: $? = %d\n", argv[1], status);
 	}//end if
 
 //The child process executes the supplied command     (see execve(2))
-	else
-	{
-	//Error
-		if (argc <= 2) {
-			fprintf(stderr, "Usage: %s <file-to-exec>\n", argv[0]);
-			exit(EXIT_FAILURE);
-		}//end if
+	else if(child == 0){
 
-		char *newenviron[] = { NULL };
-		char *newargv[argc + 1];
+		char *newargv[argc];
 
 	//the child needs to prepare the new argv structure
-		for(int i = 0; i < argc; i++)
+		for(int i = 1; i - 1 < argc; i++)
 		{
-			newargv[i] = argv[i];
+			newargv[i - 1] = argv[i];
 		}//end for
 
-		execve(argv[1], newargv, newenviron);
+		execve(argv[1], newargv, NULL);
 
-	//The parent prints the return value of the child on stderr    (see waitpid(2))
-		wpid = waitpid(child, &status, WUNTRACED);
+	//Error
+		perror("execve");   /* execve() returns only on error */
+               	exit(EXIT_FAILURE);
+	}//end if
 
-		if(wpid < 0)
-		{
-			printf("Error: %d\n", wpid);
-		}//end if
-
+//Else, fork failed
+	else
+	{
+		printf("Fork Failed\n");
 	}//end else
-
 
 //free pointers
 
