@@ -41,4 +41,5 @@ $(EXECUTABLES):
 # or intermediates.
 
 clean:
-	rm -f $(EXECUTABLES) $(OBJ) *~
+	rm -f $(EXECUTABLES) $(OBJ_1) *~
+	rm -f $(EXECUTABLES) $(OBJ_2) *~
