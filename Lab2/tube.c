@@ -1,9 +1,6 @@
 //Tube file: a program that sets to programs into motion that are connected via a tube that transports
 //inter-process communication, while also report some basic information.
 
-//draw out what needs to be done.
-//parse args -> exec -> fin
-
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -12,6 +9,9 @@
 
 #define READ_END 0
 #define WRITE_END 1
+
+//Prototypes
+void make_buffers(char** argv, int argc, char** buff_1, char** buff_2);
 
 int main(int argc, char** argv){
 	pid_t child_1, child_2;
@@ -25,67 +25,37 @@ int main(int argc, char** argv){
 		fprintf(stderr, "Error: Usage: %s Not enough args\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}//end if
-//No Error, proceed to create the buffer
+//No Error, proceed to create the buffers
 	else
 	{
-	//Buffer to hold first half of argv
-		int i = 0;
-		int j = 0;
-		int k = 0;
-		while(strcmp(argv[i], ",") != 0)
-		{
-			i++;
-
-			if(strcmp(argv[i], ",") == 0)//is it the ","?
-			{
-				i++;
-				break;
-			}//end if
-			else//no, store arg in buffer
-			{
-				buff_1[j] = argv[i];
-				j++;
-			}//end else
-		}//end while
-
-	//Buffer to hold second half of argv
-		while(i < argc)
-		{
-			buff_2[k] = argv[i];//store arg in buffer
-
-			i++;
-			k++;
-
-			if(i >= argc)//we are at the end of the list
-			{
-				break;
-			}//end if
-		}//end while
+		make_buffers(argv, argc, buff_1, buff_2);
 	}//end else
 
 //The program allocates a pipe                     (see pipe(2))
-//Error pipe failed
-	if(pipe(pipefd) == -1) {
+	if(pipe(pipefd) == -1)
+	{
+	//Error pipe failed
 		fprintf(stderr, "Error: Usage: %s Pipe failed\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}//end if
 
-//The program forks first child
+//The program forks two child processes
 	child_1 = fork();
 
-//Error fork failed
+//Error fork fail
 	if(child_1 < 0)
 	{
-		fprintf(stderr, "Error: Usage: %s Fork 1 failed\n", argv[0]);
+		fprintf(stderr, "Error: Usage: %s fork 1 failed\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}//end if
 
 	child_2 = fork();
+//child_2 = -1;
 
-//Error fork failed
+//Error fork fail
 	if(child_2 < 0)
 	{
-		fprintf(stderr, "Error: Usage: %s Fork 1 failed\n", argv[0]);
+		fprintf(stderr, "Error: Usage: %s fork 2 failed\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}//end if
 
@@ -139,7 +109,6 @@ int main(int argc, char** argv){
 	//Error
 		fprintf(stderr, "Error: Usage: %s Exec 1 failed\n", argv[0]);
 		exit(EXIT_FAILURE);
-
 	}//end if
 
 //Second child
@@ -172,3 +141,42 @@ int main(int argc, char** argv){
 
 	return 0;
 }//end main
+
+
+//Creates the buffers to hold the first and second command line args
+void make_buffers(char** argv, int argc, char** buff_1, char** buff_2)
+{
+//Buffer to hold first half of argv
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	while(strcmp(argv[i], ",") != 0)
+	{
+		i++;
+
+		if(strcmp(argv[i], ",") == 0)//is it the ","?
+		{
+			i++;
+			break;
+		}//end if
+		else//no, store arg in buffer
+		{
+			buff_1[j] = argv[i];
+			j++;
+		}//end else
+	}//end while
+
+//Buffer to hold second half of argv
+	while(i < argc)
+	{
+		buff_2[k] = argv[i];//store arg in buffer
+
+		i++;
+		k++;
+
+		if(i >= argc)//we are at the end of the list
+		{
+			break;
+		}//end if
+	}//end while
+}//end make_buffers
