@@ -134,7 +134,7 @@ int main(int argc, char** argv){
 			newargv[i] = buff_1[i];
 		}//end for
 
-		execve(buff_1[1], newargv, NULL);
+		execve(buff_1[0], newargv, NULL);
 
 	//Error
 		fprintf(stderr, "Error: Usage: %s Exec 1 failed\n", argv[0]);
