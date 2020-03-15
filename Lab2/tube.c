@@ -2,110 +2,173 @@
 //inter-process communication, while also report some basic information.
 
 //draw out what needs to be done.
-//pipe -> processes -> parse args -> exec -> fin
+//parse args -> exec -> fin
 
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <string.h>
+
+#define READ_END 0
+#define WRITE_END 1
 
 int main(int argc, char** argv){
 	pid_t child_1, child_2;
 	int status_1, status_2;
 	int pipefd[2];
+	char* buff_1[100];
+	char* buff_2[100];
 
-//Error
-	if (argc <= 1) {
+//Error argc invaild
+	if (argc <= 3) {
 		fprintf(stderr, "Error: Usage: %s Not enough args\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}//end if
+//No Error, proceed to create the buffer
+	else
+	{
+	//Buffer to hold first half of argv
+		int i = 0;
+		int j = 0;
+		int k = 0;
+		while(strcmp(argv[i], ",") != 0)
+		{
+			i++;
+
+			if(strcmp(argv[i], ",") == 0)//is it the ","?
+			{
+				i++;
+				break;
+			}//end if
+			else//no, store arg in buffer
+			{
+				buff_1[j] = argv[i];
+				j++;
+			}//end else
+		}//end while
+
+	//Buffer to hold second half of argv
+		while(i < argc)
+		{
+			buff_2[k] = argv[i];//store arg in buffer
+
+			i++;
+			k++;
+
+			if(i >= argc)//we are at the end of the list
+			{
+				break;
+			}//end if
+		}//end while
+	}//end else
 
 //The program allocates a pipe                     (see pipe(2))
-//Error
-	if (pipe(pipefd) == -1) {
+//Error pipe failed
+	if(pipe(pipefd) == -1) {
 		fprintf(stderr, "Error: Usage: %s Pipe failed\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}//end if
 
-//The program forks two children
-
+//The program forks first child
 	child_1 = fork();
+
+//Error fork failed
+	if(child_1 < 0)
+	{
+		fprintf(stderr, "Error: Usage: %s Fork 1 failed\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}//end if
+
 	child_2 = fork();
+
+//Error fork failed
+	if(child_2 < 0)
+	{
+		fprintf(stderr, "Error: Usage: %s Fork 1 failed\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}//end if
 
 //Parent
 	if(child_1 > 0 && child_2 > 0)
 	{
 	//The parent process prints the PID of both children on stderr     (see fprintf(3))
-		fprintf(stderr, "child 1 %s: $$ = %d\n", argv[1], getpid());
-		fprintf(stderr, "child 2 %s: $$ = %d\n", argv[2], getpid());
+		fprintf(stderr, "child 1 %s: $$ = %d\n", buff_1[0], child_1);
+		fprintf(stderr, "child 2 %s: $$ = %d\n", buff_2[0], child_2);
 
 	//The parent process closes access to the pipe and
-		close(pipefd[0]);
+		close(pipefd[READ_END]);//close read end
 
-	//The program prints the return value of the first child and then the second child on stderr
+		write(pipefd[WRITE_END], buff_1, sizeof(buff_1));
+		write(pipefd[WRITE_END], buff_2, sizeof(buff_2));
+
+		close(pipefd[WRITE_END]);//close write end
+
 		waitpid(child_1, &status_1, WUNTRACED);
-		fprintf(stderr, "child 1 %s: $? = %d\n", argv[1], status_1);
-
 		waitpid(child_2, &status_2, WUNTRACED);
-		fprintf(stderr, "child 2 %s: $? = %d\n", argv[2], status_2);
 
-		close(pipefd[1]);
-	}//end else if
-
-//The first process executes the first command, and the second process executes the second command                          (see execve(2))
-//for the first iteration keep it simple — i.e., the child has no command line args
-//enhance your program to allow for an arbitrary number of command line args
+	//The program prints the return value of the first child and then the second
+	//child on stderr
+		fprintf(stderr, "child 1 %s: $? = %d\n", buff_1[0], status_1);
+		fprintf(stderr, "child 2 %s: $? = %d\n", buff_2[0], status_2);
+	}//end if
 
 //First child
 	else if(child_1 == 0 && child_2 > 0)
 	{
 	//the child processes wires the pipe to allow for inter-process communication (see dup2(2))
 	//via the standard stdout-stdin approach (see close(2))
-		dup2(pipefd[1], 1);
 
-		char *newargv[argc];
+		dup2(pipefd[READ_END], READ_END);//duplicate read end of the pipe
 
-//fix	//the child needs to prepare the new argv structure
-		for(int i = 1; i - 1 < argc; i++)
+		close(pipefd[WRITE_END]);//close write end
+
+		read(pipefd[READ_END], buff_1, sizeof(buff_1));//read data from parent
+		close(pipefd[READ_END]);//close read end
+
+		char *newargv[sizeof(buff_1)];
+
+	//the child needs to prepare the new argv structure
+		for(size_t i = 0; i < sizeof(buff_1); i++)
 		{
-			newargv[i - 1] = argv[i];
+			newargv[i] = buff_1[i];
 		}//end for
 
-		execve(argv[1], newargv, NULL);
+		execve(buff_1[1], newargv, NULL);
 
 	//Error
 		fprintf(stderr, "Error: Usage: %s Exec 1 failed\n", argv[0]);
 		exit(EXIT_FAILURE);
-	}//end else if
+
+	}//end if
 
 //Second child
-	else if(child_1 > 0 && child_2 == 0)
+	else if(child_2 == 0 && child_1 > 0)
 	{
-	//the child processes wires the pipe to allow for inter-process communication (see dup2(2))
+	//the child processes wires the pipe to ahllow for inter-process communication (see dup2(2))
 	//via the standard stdout-stdin approach (see close(2))
-		dup2(pipefd[1], 1);
 
-		char *newargv[argc];
+		dup2(pipefd[READ_END], READ_END);
 
-//fix	//the child needs to prepare the new argv structure
-		for(int i = 1; i - 1 < argc; i++)
+		close(pipefd[WRITE_END]);//close write end
+
+		read(pipefd[READ_END], buff_2, sizeof(buff_2));//read data from parent
+		close(pipefd[READ_END]);//close read end
+
+		char *newargv[sizeof(buff_2)];
+
+	//the child needs to prepare the new argv structure
+		for(size_t i = 0; i < sizeof(buff_2); i++)
 		{
-			newargv[i - 1] = argv[i];
+			newargv[i] = buff_2[i];
 		}//end for
 
-		execve(argv[2], newargv, NULL);
+		execve(buff_2[0], newargv, NULL);
 
 	//Error
 		fprintf(stderr, "Error: Usage: %s Exec 2 failed\n", argv[0]);
 		exit(EXIT_FAILURE);
-	}//end else if
-
-//Else fork failed
-	else
-	{
-		fprintf(stderr, "Error: Usage: %s Fork failed\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}//end else
+	}//end if
 
 	return 0;
 }//end main
