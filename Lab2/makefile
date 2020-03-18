@@ -1,5 +1,5 @@
 # Name: Priya Singh
-# Project: Lab 1: Time and Forking Children
+# Project: Lab 2 | Launch and Tube
 # This is a Makefile for my lab assignment. It allows me to easily and accurately rebuild
 # the lab assignment.
 
