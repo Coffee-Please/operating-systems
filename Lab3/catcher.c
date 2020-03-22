@@ -9,40 +9,42 @@
 #include <sys/types.h>
 #include <string.h>
 
+static int sigterm;
+static int count;
 
 void handle_signal(int signal)
 {
-	char* sig_name[31] = {"SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP", "SIGABRT",
-		"SIGEMT", "SIGFPE", "SIGKILL", "SIGBUS", "SIGSEGV", "SIGSYS", "SIGPIPE",
- 		"SIGALARM", "SIGTERM", "SIGURG", "SIGSTOP", "SIGTSTP", "SIGCONT", "SIGCHLD",
-		"SIGTTIN", "SIGTTOU", "SIGIO", "SIGXCPU", "SIGXFSZ", "SIGVTALRM", "SIGPROF",
-		"SIGWINCH", "SIGINFO", "SIGUSR1", "SIGUSR2"};
+	char* sig_name[31] = {"SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP", "SIGIOT",
+		"SIGBUS", "SIGFPE", "SIGKILL", "SIGUSR1", "SIGSEGV", "SIGUSR2", "SIGPIPE",
+ 		"SIGALRM", "SIGTERM", "SIGSTKFLT", "SIGCHLD", "SIGCONT", "SIGSTOP", "SIGTSTP",
+		"SIGTTIN", "SIGTTOU", "SIGURG", "SIGXCPU", "SIGXFSZ", "SIGVTALRM", "SIGPROF",
+		"SIGWINCH", "SIGIO", "SIGPWR", "SIGSYS"};
 
 //The handler emits a line to stdout that indicates
 //the signal caught, and
 //the time it was caught                         (see time(2))
-	printf("%s caught at %ld\n", sig_name[signal], time(NULL));
+	printf("%s caught at %ld\n", sig_name[signal - 1], time(NULL));
+
+	count++;
+
+//if sigterm
+	if(signal == SIGTERM)
+	{
+		sigterm++;
+
+	}//end if
 
 }//end handle_signal
+
 
 int main(int argc, char** argv)
 {
 //Local Variables
-	int sigterm = 0, count = 0;
-
-	enum sig_arr{HUP, INT, QUIT, ILL, TRAP, ABRT,
-		EMT, FPE, KILL, BUS, SEGV, SYS, PIPE,
-		ALARM, TERM, URG, STOP, TSTP, CONT, CHLD,
-		TTIN, TTOU, IO, XCPU, XFSZ, VTALRM, PROF,
-		WINCH, INFO, USR1, USR2};
-
-	enum sig_arr sig;
-
-	char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT",
-		"EMT", "FPE", "KILL", "BUS", "SEGV", "SYS", "PIPE",
- 		"ALARM", "TERM", "URG", "STOP", "TSTP", "CONT", "CHLD",
-		"TTIN", "TTOU", "IO", "XCPU", "XFSZ", "VTALRM", "PROF",
-		"WINCH", "INFO", "USR1", "USR2"};
+	char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "IOT",
+		"BUS", "FPE", "KILL", "USR1", "SEGV", "USR2", "PIPE",
+ 		"ALRM", "TERM", "STKFLT", "CHLD", "CONT", "STOP",
+		"TSTP", "TTIN", "TTOU", "URG", "XCPU", "XFSZ", "VTALRM", "PROF",
+		"WINCH", "IO", "PWR", "SYS"};
 
 	int catch_arr[argc - 1];
 
@@ -54,42 +56,34 @@ int main(int argc, char** argv)
 		{
 			if(strcmp(str_arr[j], argv[i]) == 0)
 			{
-				catch_arr[i - 1] = j;//store int in catch_arr
-
+				catch_arr[i - 1] = j + 1;//store int in catch_arr
 				break;
 			}//end if
 		}//end for
 	}//end for
 
-
-
 //The program emits a status line that includes its PID to stderr
 	fprintf(stderr, "%s $$: %d\n", argv[0], getpid());
 
-	while(sigterm < 3)
+	while(sigterm < 4)
 	{
 	//The program gracefully terminates after
 	//receiving three successive SIGTERM signals       (hint: static int count)
 
 	//The program registers a handler for each argument                      (see signal(2))
-	//The handler registers itself again            (read about unreliable signals)
-		if(signal(sig, handle_signal) != SIG_ERR)
+		for(int i = 0; i < argc - 1; i++)
 		{
-			count++;
+		//The program registers a handler for each argument                      (see signal(2))
+			signal(catch_arr[i], handle_signal);
 
-		//if sigterm
-			if(sig == SIGTERM)
+		//The handler registers itself again            (read about unreliable signals)
+			for(int j = 0; j < 31 && j != catch_arr[i]; j++)
 			{
-				sigterm++;
+			//The handler registers itself again            (read about unreliable signals)
+				signal(i, SIG_IGN);
 
-			}//end if
-
-			if(sigterm == 3)
-			{
-				break;
-
-			}//end if
-		}//end if
+			}//end for
+		}//end for
 
 	//The program pauses itself continually                   (see pause(2))
 		pause();
