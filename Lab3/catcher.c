@@ -12,6 +12,7 @@
 static int sigterm;
 static int count;
 
+
 void handle_signal(int signal)
 {
 	char* sig_name[31] = {"SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP", "SIGIOT",
@@ -20,35 +21,23 @@ void handle_signal(int signal)
 		"SIGTTIN", "SIGTTOU", "SIGURG", "SIGXCPU", "SIGXFSZ", "SIGVTALRM", "SIGPROF",
 		"SIGWINCH", "SIGIO", "SIGPWR", "SIGSYS"};
 
-//The handler emits a line to stdout that indicates
-//the signal caught, and
+//The handler emits a line to stdout that indicates the signal caught, and
 //the time it was caught                         (see time(2))
 	printf("%s caught at %ld\n", sig_name[signal - 1], time(NULL));
 
 	count++;
 
-//if sigterm
+//if the signal is sigterm
 	if(signal == SIGTERM)
 	{
 		sigterm++;
 
 	}//end if
-
 }//end handle_signal
 
 
-int main(int argc, char** argv)
+void make_catch_arr(int argc, char** argv, char* str_arr[], int catch_arr[])
 {
-//Local Variables
-	char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "IOT",
-		"BUS", "FPE", "KILL", "USR1", "SEGV", "USR2", "PIPE",
- 		"ALRM", "TERM", "STKFLT", "CHLD", "CONT", "STOP",
-		"TSTP", "TTIN", "TTOU", "URG", "XCPU", "XFSZ", "VTALRM", "PROF",
-		"WINCH", "IO", "PWR", "SYS"};
-
-	int catch_arr[argc - 1];
-
-//The program processes the command line arguments
 	for(int i = 1; i < argc; i++)
 	{
 	//The arguments indicate which signals to catch
@@ -61,15 +50,13 @@ int main(int argc, char** argv)
 			}//end if
 		}//end for
 	}//end for
+}//end make_char_arr
 
-//The program emits a status line that includes its PID to stderr
-	fprintf(stderr, "%s $$: %d\n", argv[0], getpid());
 
+void parse_signals(int argc, int catch_arr[])
+{
 	while(sigterm < 4)
 	{
-	//The program gracefully terminates after
-	//receiving three successive SIGTERM signals       (hint: static int count)
-
 	//The program registers a handler for each argument                      (see signal(2))
 		for(int i = 0; i < argc - 1; i++)
 		{
@@ -89,6 +76,30 @@ int main(int argc, char** argv)
 		pause();
 
 	}//end while
+
+}//end parse_signals
+
+
+int main(int argc, char** argv)
+{
+//Local Variables
+	char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "IOT",
+		"BUS", "FPE", "KILL", "USR1", "SEGV", "USR2", "PIPE",
+ 		"ALRM", "TERM", "STKFLT", "CHLD", "CONT", "STOP",
+		"TSTP", "TTIN", "TTOU", "URG", "XCPU", "XFSZ", "VTALRM", "PROF",
+		"WINCH", "IO", "PWR", "SYS"};
+
+	int catch_arr[argc - 1];
+
+//The program processes the command line arguments
+	make_catch_arr(argc, argv, str_arr, catch_arr);
+
+//The program emits a status line that includes its PID to stderr
+	fprintf(stderr, "%s $$: %d\n", argv[0], getpid());
+
+//The program gracefully terminates after
+//receiving three successive SIGTERM signals       (hint: static int count)
+	parse_signals(argc, catch_arr);
 
 //The program emits a final status message to stderr that indicates
 //the number of signals caught
