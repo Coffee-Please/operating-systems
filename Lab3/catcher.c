@@ -11,19 +11,18 @@
 
 static int sigterm;
 static int count;
+static char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "IOT",
+	"BUS", "FPE", "KILL", "USR1", "SEGV", "USR2", "PIPE",
+	"ALRM", "TERM", "STKFLT", "CHLD", "CONT", "STOP",
+	"TSTP", "TTIN", "TTOU", "URG", "XCPU", "XFSZ", "VTALRM", "PROF",
+	"WINCH", "IO", "PWR", "SYS"};
 
 
 void handle_signal(int signal)
 {
-	char* sig_name[31] = {"SIGHUP", "SIGINT", "SIGQUIT", "SIGILL", "SIGTRAP", "SIGIOT",
-		"SIGBUS", "SIGFPE", "SIGKILL", "SIGUSR1", "SIGSEGV", "SIGUSR2", "SIGPIPE",
- 		"SIGALRM", "SIGTERM", "SIGSTKFLT", "SIGCHLD", "SIGCONT", "SIGSTOP", "SIGTSTP",
-		"SIGTTIN", "SIGTTOU", "SIGURG", "SIGXCPU", "SIGXFSZ", "SIGVTALRM", "SIGPROF",
-		"SIGWINCH", "SIGIO", "SIGPWR", "SIGSYS"};
-
 //The handler emits a line to stdout that indicates the signal caught, and
 //the time it was caught                         (see time(2))
-	printf("%s caught at %ld\n", sig_name[signal - 1], time(NULL));
+	printf("SIG%s caught at %ld\n", str_arr[signal - 1], time(NULL));
 
 	count++;
 
@@ -83,12 +82,6 @@ void parse_signals(int argc, int catch_arr[])
 int main(int argc, char** argv)
 {
 //Local Variables
-	char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "IOT",
-		"BUS", "FPE", "KILL", "USR1", "SEGV", "USR2", "PIPE",
- 		"ALRM", "TERM", "STKFLT", "CHLD", "CONT", "STOP",
-		"TSTP", "TTIN", "TTOU", "URG", "XCPU", "XFSZ", "VTALRM", "PROF",
-		"WINCH", "IO", "PWR", "SYS"};
-
 	int catch_arr[argc - 1];
 
 //The program processes the command line arguments
