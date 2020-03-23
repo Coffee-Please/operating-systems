@@ -10,8 +10,50 @@
 #define READ_END 0
 #define WRITE_END 1
 
-//Prototypes
-void make_buffers(char** argv, int argc, char** buff_1, char** buff_2);
+
+//Creates the buffers to hold the first and second command line args
+void make_buffers(char** argv, int argc, char** buff_1, char** buff_2)
+{
+//Buffer to hold first half of argv
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	while(strcmp(argv[i], ",") != 0)
+	{
+		i++;
+
+		if(strcmp(argv[i], ",") == 0)//is it the ","?
+		{
+			i++;
+			break;
+		}//end if
+		else//no, store arg in buffer
+		{
+			buff_1[j] = argv[i];
+			j++;
+		}//end else
+	}//end while
+
+//Buffer to hold second half of argv
+	while(i < argc)
+	{
+		buff_2[k] = argv[i];//store arg in buffer
+
+		i++;
+		k++;
+
+		if(i >= argc)//we are at the end of the list
+		{
+			break;
+		}//end if
+	}//end while
+}//end make_buffers
+
+void child_1()
+{
+
+}//end child_1
+
 
 int main(int argc, char** argv){
 	pid_t child_1, child_2;
@@ -142,41 +184,3 @@ int main(int argc, char** argv){
 	return 0;
 }//end main
 
-
-//Creates the buffers to hold the first and second command line args
-void make_buffers(char** argv, int argc, char** buff_1, char** buff_2)
-{
-//Buffer to hold first half of argv
-	int i = 0;
-	int j = 0;
-	int k = 0;
-	while(strcmp(argv[i], ",") != 0)
-	{
-		i++;
-
-		if(strcmp(argv[i], ",") == 0)//is it the ","?
-		{
-			i++;
-			break;
-		}//end if
-		else//no, store arg in buffer
-		{
-			buff_1[j] = argv[i];
-			j++;
-		}//end else
-	}//end while
-
-//Buffer to hold second half of argv
-	while(i < argc)
-	{
-		buff_2[k] = argv[i];//store arg in buffer
-
-		i++;
-		k++;
-
-		if(i >= argc)//we are at the end of the list
-		{
-			break;
-		}//end if
-	}//end while
-}//end make_buffers
