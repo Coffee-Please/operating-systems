@@ -16,7 +16,7 @@ char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP",
 	"USR1", "SEGV", "USR2", "PIPE",	"ALRM",
 	"TERM", "STKFLT", "CHLD", "CONT", "STOP",
 	"TSTP", "TTIN", "TTOU", "URG", "XCPU",
-	"XFSZ", "VTALRM", "PROF","WINCH", "IO"};
+	"XFSZ", "VTALRM", "PROF","WINCH"};
 
 void parse_signals(int argc, int catch_arr[]);
 void make_catch_arr(int argc, char** argv, int catch_arr[]);
@@ -66,22 +66,19 @@ void handle_signal(int sig)
 
 void make_catch_arr(int argc, char** argv, int catch_arr[])
 {
-	for(int j = 0; j < 29; j++){
-	printf("str: %s\n", str_arr[j]);
-	}
 	for(int i = 1; i < argc; i++)
 	{
 	//The arguments indicate which signals to catch
 		for(int j = 0; j < 29; j++)//search through str_arr for string
 		{
-			if(strcmp(str_arr[j], argv[i]) == 0)
+			if(strcmp(str_arr[j], argv[i]) == 0 || (strcmp(argv[i], "IOT") == 0 && strcmp(str_arr[j], "ABRT") == 0))
 			{
 				catch_arr[i - 1] = j + 1;//store int in catch_arr
 				break;
 			}//end if
 		}//end for
 	}//end for
-}//end make_char_arr
+}//end make_char_arrB
 
 
 void parse_signals(int argc, int catch_arr[])
@@ -90,18 +87,24 @@ void parse_signals(int argc, int catch_arr[])
 //receiving three successive SIGTERM signals       (hint: static int count)
 	while(sigterm < 4)
 	{
-		for(int j = 0; j < 64; j++)
+		for(int j = 1; j < 29; j++)
 		{
 		//Ignore all signals
-			signal(j, SIG_IGN);
+			if(signal(j, SIG_IGN) == SIG_ERR && j != SIGSTOP && j != SIGKILL)
+			{
+				printf("Error: SIG%s: %d not ignored.\n", str_arr[j - 1], j);
 
+			}//end if
 		}//end for
 
 		for(int i = 0; i < argc - 1; i++)
 		{
 		//The program registers a handler for each argument   (see signal(2))
-			signal(catch_arr[i], handle_signal);
+			if(signal(catch_arr[i], handle_signal) == SIG_ERR)
+			{
+				printf("Error: SIG%s: %d not caught.\n", str_arr[catch_arr[i] - 1], catch_arr[i]);
 
+			}//end if
 		}//end for
 
 	//The program pauses itself continually                   (see pause(2))
