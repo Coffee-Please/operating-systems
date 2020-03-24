@@ -11,7 +11,7 @@
 
 static int sigterm;
 static int count;
-static char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT",
+char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT",
 	"BUS", "FPE", "KILL", "USR1", "SEGV", "USR2", "PIPE",
 	"ALRM", "TERM", "STKFLT", "CHLD", "CONT", "STOP",
 	"TSTP", "TTIN", "TTOU", "URG", "XCPU", "XFSZ", "VTALRM", "PROF",
@@ -47,16 +47,19 @@ int main(int argc, char** argv)
 	return 0;
 }//end main
 
-void handle_signal(int signal)
+void handle_signal(int sig)
 {
+//The handler registers itself again            (read about unreliable signals)
+	signal(sig, handle_signal);
+
 //The handler emits a line to stdout that indicates the signal caught, and the
 //time it was caught		(see time(2))
-	printf("SIG%s caught at %ld\n", str_arr[signal - 1], time(NULL));
+	printf("SIG%s caught at %ld\n", str_arr[sig - 1], time(NULL));
 
 	count++;//Increment signals caught
 
 //if the signal is sigterm
-	if(signal == SIGTERM)
+	if(sig == SIGTERM)
 	{
 		sigterm++;
 
@@ -104,7 +107,5 @@ void parse_signals(int argc, int catch_arr[])
 	//The program pauses itself continually                   (see pause(2))
 		pause();
 
-	//The handler registers itself again            (read about unreliable signals)
 	}//end while
-
 }//end parse_signals
