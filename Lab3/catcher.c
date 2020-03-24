@@ -11,15 +11,12 @@
 
 static int sigterm;
 static int count;
-char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT",
-	"BUS", "FPE", "KILL", "USR1", "SEGV", "USR2", "PIPE",
-	"ALRM", "TERM", "STKFLT", "CHLD", "CONT", "STOP",
-	"TSTP", "TTIN", "TTOU", "URG", "XCPU", "XFSZ", "VTALRM", "PROF",
-	"WINCH", "IO", "PWR", "SYS", "WAITING", "LWP", "RTMIN", "RTMIN+1", "RTMIN+2", "RTMIN+3",
-	"RTMIN+4", "RTMIN+5", "RTMIN+6", "RTMIN+7", "RTMIN+8", "RTMIN+9", "RTMIN+10",
-	"RTMIN+11", "RTMIN+12", "RTMIN+13", "RTMIN+14", "RTMIN+15", "RTMAX-14", "RTMAX-13",
-	"RTMAX-12", "RTMAX-11", "RTMAX-10", "RTMAX-9", "RTMAX-8", "RTMAX-7", "RTMAX-6",
-	"RTMAX-5", "RTMAX-4", "RTMAX-3", "RTMAX-2", "RTMAX-1", "RTMAX"};
+char* str_arr[] = {"HUP", "INT", "QUIT", "ILL", "TRAP",
+	"ABRT", "BUS", "FPE", "KILL",
+	"USR1", "SEGV", "USR2", "PIPE",	"ALRM",
+	"TERM", "STKFLT", "CHLD", "CONT", "STOP",
+	"TSTP", "TTIN", "TTOU", "URG", "XCPU",
+	"XFSZ", "VTALRM", "PROF","WINCH", "IO"};
 
 void parse_signals(int argc, int catch_arr[]);
 void make_catch_arr(int argc, char** argv, int catch_arr[]);
@@ -69,10 +66,13 @@ void handle_signal(int sig)
 
 void make_catch_arr(int argc, char** argv, int catch_arr[])
 {
+	for(int j = 0; j < 29; j++){
+	printf("str: %s\n", str_arr[j]);
+	}
 	for(int i = 1; i < argc; i++)
 	{
 	//The arguments indicate which signals to catch
-		for(int j = 0; j < 64; j++)//search through str_arr for string
+		for(int j = 0; j < 29; j++)//search through str_arr for string
 		{
 			if(strcmp(str_arr[j], argv[i]) == 0)
 			{
