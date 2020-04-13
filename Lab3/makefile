@@ -1,5 +1,5 @@
 # Name: Priya Singh
-# Project: Lab 2 | Launch and Tube
+# Project: Lab 3 | Catcher
 # This is a Makefile for my lab assignment. It allows me to easily and accurately rebuild
 # the lab assignment.
 
