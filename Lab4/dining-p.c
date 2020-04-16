@@ -16,7 +16,7 @@ static int next;
 int rand()
 {
 	next = next * 1103515245 + 12345;
-	return((unsigned)(next/65536) % 32768);
+	return((unsigned)(next/6553) % 32768);
 }//end rand
 
 
