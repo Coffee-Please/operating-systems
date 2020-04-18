@@ -6,10 +6,9 @@
 EXEC=dining-p
 SEATS=$1
 
-#for all seats, create a philosopher
-for ((i=0; $i<$SEATS; $i++))
+#for all seats (N), create a philosopher
+for ((i=0; $i<$SEATS; i+=1))
 do
-
-	./$EXEC $SEATS $i
-	echo "SEAT: $SEATS , POS: $POS"
+	./$EXEC $SEATS $i &
+	echo "./$EXEC $SEATS $i"
 done
