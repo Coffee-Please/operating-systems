@@ -16,7 +16,7 @@ OBJ_1 = dining-p.o
 SRC_2 = launch-philosophers.sh
 #OBJ_2 = launch-philosophers.o
 
-LIBS = -lpthread
+LIBS = -lpthread -lrt
 
 # The CC and CFLAGS variables are defined to ensure I'm using the native compiler and
 # that the correct command-line options are set
@@ -49,7 +49,7 @@ launch-philosophers:
 #
 
 dining-p:
-	$(CC) $(CFLAGS) -c $(SRC_1) -Wall -Wextra
+	$(CC) $(CFLAGS) -c $(SRC_1) ${LIBS} -Wall -Wextra
 	$(CC) $(CFLAGS) -o $(FILE_1) $(OBJ_1) ${LIBS}
 
 
