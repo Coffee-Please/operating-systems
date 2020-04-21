@@ -110,14 +110,6 @@ int main(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}//end if
 
-//Create a new process group
-	setpgid();
-
-//for N seats, create N-1 processes
-//	int child = fork();
-//error, fork
-
-
 //seed rand
 	srand(RAND_MAX);
 
