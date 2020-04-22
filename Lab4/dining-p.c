@@ -6,6 +6,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -61,7 +63,6 @@ int dine(sem_t chopstick[], int i, int seats)
 	}while(!stop);
 
 	return eat_think_cycle;
-
 }//end dine
 
 
@@ -78,10 +79,13 @@ void kill_cycle(sem_t chopstick[], int position, char* sem_name)
 
 void sig_handler(int signum)
 {
+//reregister signal handler
 	signal(SIGTERM, sig_handler);
 
-	printf("SIGTERM (%d) recieved.\n", signum);
+//Messages
+	printf("SIGTERM (%d) received...\n", signum);
 
+//stop philosophers dining
 	stop = 1;
 }//end sig_handler
 
@@ -99,6 +103,7 @@ int main(int argc, char** argv)
 	int position = atoi(argv[2]);
 	int seats = atoi(argv[1]);
 	const int SIZE = seats * 32;
+	int completed_cycles = 0;
 	sem_t chopstick[seats + 1];
 	int shm_fd;
 	char* sem_name = argv[2];
@@ -106,7 +111,7 @@ int main(int argc, char** argv)
 //If the position # is more than the number of seats, error
 	if(!(position <= seats))//N for part 2
 	{
-		printf("Error: Full Table. Philosopher %d rejected\n", position);
+		printf("Error: No seat. Philosopher %d rejected\n", position);
 		exit(EXIT_FAILURE);
 	}//end if
 
@@ -139,8 +144,15 @@ int main(int argc, char** argv)
 //allocate to memory map
 	mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
 
+//set the group id
+	if(setpgid(getpid(), getppid()) != 0)
+	{
+		printf("Error: setpgid fail\n");
+		exit(EXIT_SUCCESS);
+	}//end if
+
 //start dining
-	int completed_cycles = dine(chopstick, position, seats);
+	completed_cycles = dine(chopstick, position, seats);
 
 //kill the philosophers
 	kill_cycle(chopstick, position, sem_name);
