@@ -12,71 +12,98 @@
 #include <errno.h>
 
 static int stop;
-static int next;
+static unsigned int next;
 
 
+//create rand()
 int rand()
 {
-	next = next * 1103515245 + 12345;
-	return(((unsigned)(next/6553) % 32768) * 10);
+	next = (((next * 1103515245 + 12345) /6553) % 32768) * 10;
+	return((unsigned)next);
 }//end rand
 
-
+//get seed for rand()
 void srand(unsigned int seed)
 {
 	next = seed;
 }//end srand
 
-
+//the philosophers are eating
 void eat(int position)
 {
 	printf("Philosopher #%d is eating...\n", position);
 	usleep(rand());
+
+	return;
 }//end eat
 
-
+//the philosophers are thinking
 void think(int position)
 {
 	printf("Philosopher #%d is thinking...\n", position);
 	usleep(rand());
+
+	return;
 }//end think
 
-
-int dine(sem_t chopstick[], int i, int seats)
+//The philosophers are dining
+int dine(sem_t* chopstick[], int position)
 {
 //to keep a count of the number of full eat-think cycles
 	int eat_think_cycle = 0;
+	int sval_1;
+	int sval_2;
 
 	do
 	{
-		sem_wait(&chopstick[i]);
-		sem_wait(&chopstick[(i + 1) % seats]);
+	//Philosopher is thinking
+		think(position);
 
-		eat(i);
+		sem_getvalue(chopstick[1], &sval_2);
+		sem_getvalue(chopstick[0], &sval_1);
 
-		sem_post(&chopstick[i]);
-		sem_post(&chopstick[(i + 1) % seats]);
+		//check L/R chopsticks if they are free
+		if(sval_1 == 1 && sval_2 == 1)
+		{
+		//Philosopher has their chopsticks so they eat
+			eat(position);
 
-		think(i);
+		//is finished eating
+		//release L/R chopsticks and let others know
+			sem_post(chopstick[1]);
+			sem_post(chopstick[0]);
 
-		eat_think_cycle++;
+			eat_think_cycle++;
+		}//end if
+
+		//else, wait for free chopsticks
+		else
+		{
+			sem_wait(chopstick[0]);
+			sem_wait(chopstick[1]);
+		}//end else
 	}while(!stop);
 
 	return eat_think_cycle;
 }//end dine
 
-
-void kill_cycle(sem_t chopstick[], int position, char* sem_name)
+//the philosophers are dying
+void kill_cycle(sem_t* chopstick[], char sem_name_1[], char sem_name_2[])
 {
 //When your program receives this signal, it needs to
 //effectively remove the philosopher from the eat-think cycle
 //release any system resources
-	sem_close(&chopstick[position]);
-	shm_unlink(sem_name);
-	sem_destroy(&chopstick[position]);
+	sem_close(chopstick[0]);
+	sem_close(chopstick[1]);
+
+	sem_unlink(sem_name_1);
+	sem_unlink(sem_name_2);
+
+	sem_destroy(chopstick[0]);
+	sem_destroy(chopstick[1]);
 }//end kill
 
-
+//signal handler for SIGTERM
 void sig_handler(int signum)
 {
 //reregister signal handler
@@ -102,11 +129,10 @@ int main(int argc, char** argv)
 //local variables
 	int position = atoi(argv[2]);
 	int seats = atoi(argv[1]);
-	const int SIZE = seats * 32;
 	int completed_cycles = 0;
-	sem_t chopstick[seats + 1];
-	int shm_fd;
-	char* sem_name = argv[2];
+	sem_t* chopstick[2];
+	sem_t* rtnVal_1;
+	sem_t* rtnVal_2;
 
 //If the position # is more than the number of seats, error
 	if(!(position <= seats))//N for part 2
@@ -115,34 +141,51 @@ int main(int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}//end if
 
+//Set the names of the semaphores
+	char name_holder[50];
+
+//if there is only one philosopher
+	if(seats == 1)
+	{
+		sprintf(name_holder, "%d", (position + 1));
+	}//end if
+
+	else
+	{
+		sprintf(name_holder, "%d", (position % seats));
+	}//end else
+
+//name the philosophers
+	char sem_name_1[50];
+	char sem_name_2[50];
+
+	strcpy(sem_name_1, "/");
+	strcat(sem_name_1, argv[2]);
+
+	strcpy(sem_name_2, "/");
+	strcat(sem_name_2, name_holder);
+
 //seed rand
 	srand(RAND_MAX);
 
 //Develop a signal handler for SIGTERM.
 	signal(SIGTERM, sig_handler);
 
-//allocate a semaphore for each chopstick         (see sem_open(3))
-	for(int i = 0; i < seats; i++)
+//initialize semaphore 1 - left chopstick
+	rtnVal_1 = sem_open(sem_name_1, O_CREAT | O_EXCL, 0666, 1);
+	if(rtnVal_1 == SEM_FAILED)
 	{
-	//initialize semaphore
-		if(sem_init(&chopstick[i], 1, 1) < 0)
-		{
-			printf("Error: sem_init\n");//semaphore initialization failed
-			exit(EXIT_FAILURE);
-		}//end if
-	}//end for
-
-//open semaphores
-	shm_fd = shm_open(argv[2], O_CREAT | O_EXCL, 0666);
-
-	if(shm_fd < 0)
-	{
-		printf("Error: shm_open\n");//semaphore initialization failed
-		exit(EXIT_FAILURE);
+		rtnVal_1 = sem_open(sem_name_1, 0);
 	}//end if
+	chopstick[0] = rtnVal_1;
 
-//allocate to memory map
-	mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
+//initialize semaphore 2 - right chopstick
+	rtnVal_2 = sem_open(sem_name_2, O_CREAT | O_EXCL, 0666, 1);
+	if(rtnVal_2 == SEM_FAILED)
+	{
+		rtnVal_2 = sem_open(sem_name_2, 0);
+	}//end if
+	chopstick[1] = rtnVal_2;
 
 //set the group id
 	if(setpgid(getpid(), getppid()) != 0)
@@ -152,10 +195,10 @@ int main(int argc, char** argv)
 	}//end if
 
 //start dining
-	completed_cycles = dine(chopstick, position, seats);
+	completed_cycles = dine(chopstick, position);
 
 //kill the philosophers
-	kill_cycle(chopstick, position, sem_name);
+	kill_cycle(chopstick, sem_name_1, sem_name_2);
 
 //Philosopher #n completed m cycles
 	fprintf(stderr, "Philosopher #%d completed %d cycles.\n", position, completed_cycles);
