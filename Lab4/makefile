@@ -12,9 +12,7 @@ FILE_1 = dining-p
 SRC_1 = dining-p.c
 OBJ_1 = dining-p.o
 
-#FILE_2 = launch-philosophers
 SRC_2 = launch-philosophers.sh
-#OBJ_2 = launch-philosophers.o
 
 LIBS = -lpthread -lrt
 
@@ -40,8 +38,6 @@ $(EXECUTABLES):
 #Here is the launch-philosophers target for the Makefile.
 #
 launch-philosophers:
-#	$(CC) $(CFLAGS) -c $(SRC_2) -Wall -Wextra
-#	$(CC) $(CFLAGS) -o $(FILE_2) $(OBJ_2) ${LIBS}
 	chmod +x $(SRC_2)
 
 
