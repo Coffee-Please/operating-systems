@@ -18,7 +18,7 @@ static unsigned int next;
 //create rand()
 int rand()
 {
-	next = (((next * 1103515245 + 12345) /6553) % 32768) * 10;
+	next = (((next * 1103515245 + 12345) /6553) % 32768) * 50;
 	return((unsigned)next);
 }//end rand
 
