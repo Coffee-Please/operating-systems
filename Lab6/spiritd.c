@@ -11,77 +11,79 @@
 #include <stdlib.h>
 #include <signal.h>
 
-//void sig_handler(int signum)
+//void sigterm_handler(int signum)
 //{
 //
-//}//end sig_handler
+//}//end sigterm_handler
 //
-//void sig_handler(int signum)
+//void sigusr1_handler(int signum)
 //{
 //
-//}//end sig_handler
+//}//end sigusr1_handler
 //
-//void sig_handler(int signum)
+//void sigusr2_handler(int signum)
 //{
 //
-//}//end sig_handler
+//}//end sigusr2_handler
 
-
-int main(int argc, char** argv)
+void create_daemon()
 {
 //Local Variables
-	int child, fd_0, fd_1, fd_2;
+	int fd_0, fd_1, fd_2;
+	pid_t child;
 	struct rlimit cur;
 
 //Set the file creation mask to 0                 (see umask(2))
 	umask(0);
 
-//Fork
-	child = fork();
+//Get all file descriptors possibly inherited from parent or otherwise (see getrlimit(2))
+	getrlimit(RLIMIT_NOFILE, &cur);
 
-//Fork Error
-	if(child < 0)
+//Fork
+	if((child = fork()) < 0)
 	{
+	//Fork Error
 		printf("Error: Fork Fail\n");
-		exit(EXIT_SUCCESS);
+		exit(EXIT_FAILURE);
 	}//end else
 
 //Parent Process, have the parent terminate
-	else if(child > 0)
+	else if(child != 0)
 	{
-		exit(EXIT_SUCCESS);
+		exit(0);
 	}//end if
 
-//Child Process continues
+//Child Process continues to run
 
 //Create a new session                     (see setsid(2))
-	if(setsid() != 0)
-	{
-		printf("Error: Setsid Fail\n");
-		exit(EXIT_FAILURE);
-	}//end if
+	setsid();
 
 //create a new process group
-	setpgid(0, 0);
+	setpgid(getpid(), getsid(getpid()));
 
-//setgpid error
+//Fork again
+	if((child = fork()) < 0)
+	{
+	//Fork Error
+		printf("Error: Fork Fail\n");
+		exit(EXIT_FAILURE);
+	}//end else
 
-//Change the current working directory to be the root directory “/”         (see chdir(2))
+//Parent Process, have the parent terminate
+	else if(child != 0)
+	{
+		exit(0);
+	}//end if
+
+//Change the current working directory to be the root directory “~/”         (see chdir(2))
 	chdir("~/");
-
-//chdir error
-
-
-//Close all unneeded file descriptors possibly inherited from parent or otherwise (see getrlimit(2))
-	getrlimit(RLIMIT_NPROC, &cur);
-
-//getrlimit error
 
 	if(cur.rlim_max == RLIM_INFINITY)
 	{
 		cur.rlim_max = 1024;
 	}//end if
 
+//Close all file descriptors
 	for(unsigned int i = 0; i < cur.rlim_max; i++)
 	{
 		close(i);
@@ -91,6 +93,22 @@ int main(int argc, char** argv)
 	fd_0 = open("/dev/null", O_RDWR);
 	fd_1 = dup(0);
 	fd_2 = dup(0);
+
+//Error reopening descriptors
+	if(fd_0 != 0 || fd_1 != 1 || fd_2 != 2)
+	{
+		printf("Error: fd %d %d %d\n", fd_0, fd_1, fd_2);
+	}//end if
+
+}//end create_daemon
+
+int main()
+{
+//Create daemon process
+	create_daemon();
+
+//Keep the daemon running
+	while(1){}//end while
 
 	return 0;
 }//end main
