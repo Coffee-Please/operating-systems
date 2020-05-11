@@ -6,16 +6,17 @@
 # EXECUTABLES is a Make Variable (similar to an environment variable) that lists all the
 # "executables" associated with the lab. 
 
-EXECUTABLES = spiritd moles
+EXECUTABLES = spiritd mole1 mole2
 
 FILE_1 = spiritd
 SRC_1 = spiritd.c
 OBJ_1 = spiritd.o
 
-FILE_2 = moles
-SRC_2 = moles.c
-OBJ_2 = moles.o
+FILE_2 = mole1
+SRC_2 = mole.c
+OBJ_2 = mole.o
 
+FILE_3 = mole2
 
 
 # The CC and CFLAGS variables are defined to ensure I'm using the native compiler and
@@ -47,9 +48,13 @@ spiritd:
 #Here is the moles target for the Makefile.
 #
 
-moles:
+mole1:
 	$(CC) $(CFLAGS) -c $(SRC_2) -Wall -Wextra
 	$(CC) $(CFLAGS) -o $(FILE_2) $(OBJ_2)
+
+mole2:
+	$(CC) $(CFLAGS) -c $(SRC_2) -Wall -Wextra
+	$(CC) $(CFLAGS) -o $(FILE_3) $(OBJ_2)
 
 
 # By convention, I always have a target called
