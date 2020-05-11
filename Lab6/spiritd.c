@@ -11,25 +11,38 @@
 #include <stdlib.h>
 #include <signal.h>
 
+unsigned int stop = 1;
 
+//The daemon handles: SIG_TERM
 void sigterm_handler(int signum)
 {
-//The daemon handles: SIG_TERM, SIG_USR1, and SIG_USR2  (see signal(2))
-//Upon SIG_TERM, the program kills all child processes and
-//shutdowns the daemon gracefully.                     (see kill(2))
+//Reregister handler
+	signal(SIGTERM, sigterm_handler);
 
+//Upon SIG_TERM, the program kills all child processes
+//	kill(getsid(), SIGTERM);
+
+//shutdowns the daemon gracefully.                     (see kill(2))
+	stop = 0;
 }//end sigterm_handler
 
 
+//The daemon handles: SIG_USR1
 void sigusr1_handler(int signum)
 {
-//Upon SIG_USR1, the program will
+//Reregister handler
+	signal(SIGUSR1, sigusr1_handler);
+
 //kill child process #1 (mole1)
+//	kill();
+
 //randomly create either mole1 or mole 2 if it does not already exists
+
 
 //When a new mole is created the following steps are followed:
 
 //fork a new process                        (see fork(2))
+//	fork();
 
 //randomly determine the child process number (either 1 or 2)
 
@@ -38,11 +51,17 @@ void sigusr1_handler(int signum)
 //mole1
 //mole2
 
+//	execv();
+
 }//end sigusr1_handler
 
 
+//The daemon handles: SIG_USR2
 void sigusr2_handler(int signum)
 {
+//Reregister handler
+	signal(SIGUSR2, sigusr2_handler);
+
 //Upon SIG_USER2, the program will
 //kill child process #1 (mole2)
 //randomly create either mole1 or mole 2 if it does not already exists
@@ -61,6 +80,7 @@ void sigusr2_handler(int signum)
 }//end sigusr2_handler
 
 
+//Creates the daemon process
 void create_daemon()
 {
 //Local Variables
@@ -117,7 +137,7 @@ void create_daemon()
 //Reopen fd 0
 	fd_0 = open("/dev/null", O_RDWR);
 
-//Error reopening file descriptors
+//Error reopening file descriptor
 	if(fd_0 != 0)
 	{
 		printf("Error: fd_0 %d\n", fd_0);
@@ -126,7 +146,7 @@ void create_daemon()
 //Reopen fd 1
 	fd_1 = dup(0);
 
-//Error reopening file descriptors
+//Error reopening file descriptor
 	if(fd_1 != 1)
 	{
 		printf("Error: fd_1 %d\n", fd_1);
@@ -135,21 +155,27 @@ void create_daemon()
 //Reopen fd 2
 	fd_2 = dup(0);
 
-//Error reopening file descriptors
+//Error reopening file descriptor
 	if(fd_2 != 2)
 	{
 		printf("Error: fd %d\n", fd_2);
 	}//end if
 }//end create_daemon
 
+
 int main()
 {
+//Register signal handlers
+	signal(SIGTERM, sigterm_handler);
+	signal(SIGUSR1, sigusr1_handler);
+	signal(SIGUSR2, sigusr2_handler);
+
 //Create daemon process
 	create_daemon();
 
 //Keep the daemon running
-	while(1)
+	while(!stop)
 	{}//end while
 
-	return 0;
+	exit(EXIT_SUCCESS);
 }//end main
