@@ -10,8 +10,27 @@
 #include <sys/resource.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <time.h>
 
-unsigned int stop = 1;
+void choose_mole();
+void create_mole();
+
+unsigned int next;
+
+
+//Generating rand
+int rand()
+{
+	return next;
+}//end rand
+
+
+//Seeding srand
+void srand(unsigned int seed)
+{
+	next = seed;
+}//end srand
+
 
 //The daemon handles: SIG_TERM
 void sigterm_handler(int signum)
@@ -19,11 +38,18 @@ void sigterm_handler(int signum)
 //Reregister handler
 	signal(SIGTERM, sigterm_handler);
 
+//Indicate signal received in log since printf doesn't work
+	FILE* fp = fopen("sig_log.txt", "a");
+
+	fprintf(fp, "SID: %d | Signal SIGTERM (%d) received.\n", getsid(getpid()), signum);
+
+	fclose(fp);
+
 //Upon SIG_TERM, the program kills all child processes
-//	kill(getsid(), SIGTERM);
+	kill(getsid(getpid()), SIGTERM);
 
 //shutdowns the daemon gracefully.                     (see kill(2))
-	stop = 0;
+	exit(EXIT_SUCCESS);
 }//end sigterm_handler
 
 
@@ -33,51 +59,99 @@ void sigusr1_handler(int signum)
 //Reregister handler
 	signal(SIGUSR1, sigusr1_handler);
 
+//Indicate signal received
+	FILE* fp = fopen("sig_log.txt", "a");
+
+	fprintf(fp, "SID: %d | Signal SIGUSR1 (%d) received.\n", getsid(getpid()), signum);
+
+	fclose(fp);
+
 //kill child process #1 (mole1)
-//	kill();
+	kill(getpid(), SIGTERM);
 
-//randomly create either mole1 or mole 2 if it does not already exists
+//Choose which mole to create
+	choose_mole();
 
-
-//When a new mole is created the following steps are followed:
-
-//fork a new process                        (see fork(2))
-//	fork();
-
-//randomly determine the child process number (either 1 or 2)
-
-//exec the program mole,
-//with the value of argv[0] set to either            (see execv(2))
-//mole1
-//mole2
-
-//	execv();
-
+//Create mole
+	create_mole();
 }//end sigusr1_handler
 
 
-//The daemon handles: SIG_USR2
-void sigusr2_handler(int signum)
+////The daemon handles: SIG_USR2
+//void sigusr2_handler(int signum)
+//{
+////Reregister handler
+//	signal(SIGUSR2, sigusr2_handler);
+//
+////Print signal received
+//	printf("Signal (%d) received.\n", signum);
+//
+////kill child process #1 (mole2)
+//	kill(getpid(), SIGTERM);
+//
+////Choose which mole to create
+//	choose_mole();
+//
+////Create mole
+//	create_mole();
+//}//end sigusr2_handler
+
+
+//Choose which mole to create
+void choose_mole()
 {
-//Reregister handler
-	signal(SIGUSR2, sigusr2_handler);
+//Choose 1 or 2 randomly
+	int rand_num = (rand() % 2) + 1;
 
-//Upon SIG_USER2, the program will
-//kill child process #1 (mole2)
-//randomly create either mole1 or mole 2 if it does not already exists
+//If 1 and is chosen and mole 1 does not exist
+	if(rand_num == 1 && access("mole1", F_OK) < 0)
+	{
+	//Create mole1
+		char* args[] = {"mole1", NULL};
 
-//When a new mole is created the following steps are followed:
+		execv("/make", args);
+	}//end if
 
+//If 2 is chosen and mole 2 does not exist
+	if(rand_num == 2 && access("mole2", F_OK) < 0)
+	{
+	//Create mole2
+		char* args[] = {"mole2", NULL};
+
+		execv("/make", args);
+	}//end if
+}//end choose_mole
+
+
+//Create a new mole
+void create_mole()
+{
 //fork a new process                        (see fork(2))
+	fork();
 
-//randomly determine the child process number (either 1 or 2)
+//Randomly choose if child process number is 1 or 2
+	int rand_child_num = (rand() % 2) + 1;
 
-//exec the program mole,
-//with the value of argv[0] set to either            (see execv(2))
-//mole1
-//mole2
+//If the child process is 1
+	if(rand_child_num == 1)
+	{
+	//Set the argv[0] to mole1
+		char* argv[] = {"mole1", NULL};
 
-}//end sigusr2_handler
+	//Exec the program mole,
+		execv("~/", argv);
+	}//end if
+
+//Else, child process is 2
+	else
+	{
+	//Set argv[0] to mole2
+		char* argv[] = {"mole2", NULL};
+
+	//Exec the program mole,
+		execv("~/", argv);
+	}//end else
+}//end create mole
 
 
 //Creates the daemon process
@@ -118,6 +192,29 @@ void create_daemon()
 //Change the current working directory to be the root directory “~/”         (see chdir(2))
 	chdir("~/");
 
+//Register signal handlers
+	signal(SIGTERM, sigterm_handler);
+	signal(SIGUSR1, sigusr1_handler);
+//	signal(SIGUSR2, sigusr2_handler);
+
+//Fork Again so process is not the session leader
+	child = fork();
+
+//Fork Error
+	if(child < 0)
+	{
+		printf("Error: Fork Fail\n");
+		exit(EXIT_FAILURE);
+	}//end else
+
+//Parent Process, have the parent terminate
+	else if(child != 0)
+	{
+		exit(EXIT_SUCCESS);
+	}//end if
+
+//Child Process continues to run
+
 //Get all file descriptors possibly inherited from parent or otherwise (see getrlimit(2))
 	getrlimit(RLIMIT_NOFILE, &cur);
 
@@ -136,45 +233,27 @@ void create_daemon()
 //Reopen the standard file descriptors to map to /dev/null (see dup(2))
 //Reopen fd 0
 	fd_0 = open("/dev/null", O_RDWR);
+	fd_1 = dup(fd_0);
+	fd_2 = dup(fd_0);
 
 //Error reopening file descriptor
-	if(fd_0 != 0)
+	if(fd_0 != 0 || fd_1 != 1 || fd_2 != 2)
 	{
-		printf("Error: fd_0 %d\n", fd_0);
-	}//end if
-
-//Reopen fd 1
-	fd_1 = dup(0);
-
-//Error reopening file descriptor
-	if(fd_1 != 1)
-	{
-		printf("Error: fd_1 %d\n", fd_1);
-	}//end if
-
-//Reopen fd 2
-	fd_2 = dup(0);
-
-//Error reopening file descriptor
-	if(fd_2 != 2)
-	{
-		printf("Error: fd %d\n", fd_2);
+		printf("Error: fd 0|%d 1|%d 2|%d\n", fd_0, fd_1, fd_2);
 	}//end if
 }//end create_daemon
 
 
 int main()
 {
-//Register signal handlers
-	signal(SIGTERM, sigterm_handler);
-	signal(SIGUSR1, sigusr1_handler);
-	signal(SIGUSR2, sigusr2_handler);
+//Seed srand
+	srand(time(NULL));
 
 //Create daemon process
 	create_daemon();
 
 //Keep the daemon running
-	while(!stop)
+	while(1)
 	{}//end while
 
 	exit(EXIT_SUCCESS);
