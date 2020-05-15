@@ -11,9 +11,9 @@ int main(int argc, char** argv)
 	FILE* fp;
 
 //Check the number of args
-	if(argc != 1)
+	if(argc < 1)
 	{
-		printf("Error: Argc != 1\n");
+		printf("Error: Argc < 1\n");
 		exit(EXIT_FAILURE);
 	}//end if
 
