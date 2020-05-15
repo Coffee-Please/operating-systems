@@ -41,13 +41,16 @@ void sigterm_handler(int signum)
 //Reregister handler
 	signal(SIGTERM, sigterm_handler);
 
+	if(mole_child != 0)
+	{
+	//kills child process
+		kill(mole_child, SIGTERM);
+	}//end if
+
 //Indicate signal received in log since printf doesn't work
 	FILE* fp = fopen("lab6.log", "a");
 	fprintf(fp, "SID: %d | Signal SIGTERM (%d) received.\n", getsid(getpid()), signum);
 	fclose(fp);
-
-//Upon SIG_TERM, the program kills all child processes
-	kill(mole_child, SIGTERM);
 
 //shutdowns the daemon gracefully.                     (see kill(2))
 	exit(EXIT_SUCCESS);
@@ -62,13 +65,11 @@ void sigusr1_handler(int signum)
 
 //Indicate signal received
 	FILE* fp = fopen("lab6.log", "a");
-
 	fprintf(fp, "SID: %d | Signal SIGUSR1 (%d) received.\n", getsid(getpid()), signum);
 
 //kill child process #1 (mole1) if it exists
-	if(child_alive == 1)
+	if(mole_child != 0)
 	{
-		fprintf(fp, "killed child 1\n");
 		kill(mole_child, SIGTERM);
 	}//end if
 
@@ -76,8 +77,6 @@ void sigusr1_handler(int signum)
 
 //Create mole
 	create_mole();
-
-	waitpid(mole_child, &status, WUNTRACED);
 }//end sigusr1_handler
 
 
@@ -89,13 +88,11 @@ void sigusr2_handler(int signum)
 
 //Indicate signal received
 	FILE* fp = fopen("lab6.log", "a");
-
 	fprintf(fp, "SID: %d | Signal SIGUSR2 (%d) received.\n", getsid(getpid()), signum);
 
 //kill child process #1 (mole1) if it exists
-	if(child_alive == 2)
+	if(mole_child != 0)
 	{
-		fprintf(fp, "Killed child 2.\n");
 		kill(mole_child, SIGTERM);
 	}//end if
 
@@ -103,8 +100,6 @@ void sigusr2_handler(int signum)
 
 //Create mole
 	create_mole();
-
-	waitpid(mole_child, &status, WUNTRACED);
 }//end sigusr2_handler
 
 
@@ -174,12 +169,6 @@ void create_daemon()
 //create a new process group
 	setpgid(getpid(), getsid(getpid()));
 
-//Register signal handlers
-	signal(SIGTERM, sigterm_handler);
-	signal(SIGUSR1, sigusr1_handler);
-	signal(SIGUSR2, sigusr2_handler);
-	signal(SIGHUP, SIG_IGN);
-
 //Change the current working directory to be the root directory “~/”         (see chdir(2))
 	chdir("~/");
 
@@ -227,6 +216,12 @@ void create_daemon()
 	{
 		printf("Error: fd 0|%d 1|%d 2|%d\n", fd_0, fd_1, fd_2);
 	}//end if
+
+
+//Register signal handlers
+	signal(SIGTERM, sigterm_handler);
+	signal(SIGUSR1, sigusr1_handler);
+	signal(SIGUSR2, sigusr2_handler);
 }//end create_daemon
 
 
@@ -239,7 +234,8 @@ int main()
 	create_daemon();
 
 //Keep the daemon running
-	while(1){}//end while
+	while(1)
+	{}//end while
 
 	exit(EXIT_SUCCESS);
 }//end main
