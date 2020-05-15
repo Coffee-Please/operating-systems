@@ -25,3 +25,10 @@ on 5/6/2020
 	Did it to get rid of some 'int signum not used' warnings.
 	Stuck on implementing SIGUSR1.
 ---
+
+5/14/2020
+	Made it to the point where it should be workking but it's not.
+	I hit a blocker with the execv() and kill(). They both use the same SIGTERM handler as the main process
+	and kill the whole operation.
+	I'm going to start Lab 7 now, just to get something out.
+---
