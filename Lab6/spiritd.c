@@ -12,12 +12,14 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <time.h>
+#include <limits.h>
+#include <string.h>
 
 pid_t mole_child;
 unsigned int child_alive;
 unsigned int next;
 int status;
-
+char cwd[PATH_MAX + 40];
 void create_mole();
 
 
@@ -48,9 +50,7 @@ void sigterm_handler(int signum)
 	}//end if
 
 //Indicate signal received in log since printf doesn't work
-	FILE* fp = fopen("lab6.log", "a");
-	fprintf(fp, "SID: %d | Signal SIGTERM (%d) received.\n", getsid(getpid()), signum);
-	fclose(fp);
+	printf("SID: %d | Signal SIGTERM (%d) received.\n");
 
 //shutdowns the daemon gracefully.                     (see kill(2))
 	exit(EXIT_SUCCESS);
@@ -70,7 +70,7 @@ void sigusr1_handler(int signum)
 //kill child process #1 (mole1) if it exists
 	if(mole_child != 0)
 	{
-		kill(mole_child, SIGTERM);
+		kill(mole_child, SIGKILL);
 	}//end if
 
 	fclose(fp);
@@ -93,7 +93,7 @@ void sigusr2_handler(int signum)
 //kill child process #1 (mole1) if it exists
 	if(mole_child != 0)
 	{
-		kill(mole_child, SIGTERM);
+		kill(mole_child, SIGKILL);
 	}//end if
 
 	fclose(fp);
@@ -119,7 +119,7 @@ void create_mole()
 		char* argv[] = {"mole1", NULL};
 
 	//Exec the program mole,
-		execv("mole", argv);
+		execv(cwd, argv);
 	}//end if
 
 //Else, child process is 2
@@ -129,7 +129,7 @@ void create_mole()
 		char* argv[] = {"mole2", NULL};
 
 	//Exec the program mole,
-		execv("mole", argv);
+		execv(cwd, argv);
 	}//end else
 }//end create mole
 
@@ -227,6 +227,10 @@ void create_daemon()
 
 int main()
 {
+//Rememeber the working directory
+	getcwd(cwd, sizeof(cwd));
+	strcat(cwd, "/mole\0");
+	printf("cwd: %s\n", cwd);
 //Seed srand
 	srand(time(NULL));
 
