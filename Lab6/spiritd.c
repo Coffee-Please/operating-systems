@@ -18,14 +18,16 @@
 pid_t mole_child;
 unsigned int child_alive;
 unsigned int next;
-int status;
 char cwd[PATH_MAX + 40];
+
 void create_mole();
 
 
 //Generating rand
 int rand()
 {
+	next = (((next * 1103515245) + 12345) / 65536) % 32768;
+
 	return next;
 }//end rand
 
@@ -50,7 +52,7 @@ void sigterm_handler(int signum)
 	}//end if
 
 //Indicate signal received in log since printf doesn't work
-	printf("SID: %d | Signal SIGTERM (%d) received.\n");
+	printf("SID: %d | Signal SIGTERM (%d) received.\n", getsid(getpid()), signum);
 
 //shutdowns the daemon gracefully.                     (see kill(2))
 	exit(EXIT_SUCCESS);
@@ -64,16 +66,13 @@ void sigusr1_handler(int signum)
 	signal(SIGUSR1, sigusr1_handler);
 
 //Indicate signal received
-	FILE* fp = fopen("lab6.log", "a");
-	fprintf(fp, "SID: %d | Signal SIGUSR1 (%d) received.\n", getsid(getpid()), signum);
+	printf("SID: %d | Signal SIGUSR1 (%d) received.\n", getsid(getpid()), signum);
 
 //kill child process #1 (mole1) if it exists
 	if(mole_child != 0)
 	{
 		kill(mole_child, SIGKILL);
 	}//end if
-
-	fclose(fp);
 
 //Create mole
 	create_mole();
@@ -87,16 +86,13 @@ void sigusr2_handler(int signum)
 	signal(SIGUSR2, sigusr2_handler);
 
 //Indicate signal received
-	FILE* fp = fopen("lab6.log", "a");
-	fprintf(fp, "SID: %d | Signal SIGUSR2 (%d) received.\n", getsid(getpid()), signum);
+	printf("SID: %d | Signal SIGUSR2 (%d) received.\n", getsid(getpid()), signum);
 
 //kill child process #1 (mole1) if it exists
 	if(mole_child != 0)
 	{
 		kill(mole_child, SIGKILL);
 	}//end if
-
-	fclose(fp);
 
 //Create mole
 	create_mole();
@@ -113,23 +109,23 @@ void create_mole()
 	child_alive = (rand() % 2) + 1;
 
 //If the child process is 1
-	if(child_alive == 1)
+	if(child_alive == 1 && mole_child == 0)
 	{
 	//Set the argv[0] to mole1
-		char* argv[] = {"mole1", NULL};
+		char* args[] = {"mole1", NULL};
 
 	//Exec the program mole,
-		execv(cwd, argv);
+		execv(cwd, args);
 	}//end if
 
 //Else, child process is 2
-	if(child_alive == 2)
+	if(child_alive == 2 && mole_child == 0)
 	{
 	//Set argv[0] to mole2
-		char* argv[] = {"mole2", NULL};
+		char* args[] = {"mole2", NULL};
 
 	//Exec the program mole,
-		execv(cwd, argv);
+		execv(cwd, args);
 	}//end else
 }//end create mole
 
@@ -168,6 +164,11 @@ void create_daemon()
 
 //create a new process group
 	setpgid(getpid(), getsid(getpid()));
+
+//Register signal handlers
+	signal(SIGTERM, sigterm_handler);
+	signal(SIGUSR1, sigusr1_handler);
+	signal(SIGUSR2, sigusr2_handler);
 
 //Change the current working directory to be the root directory “~/”         (see chdir(2))
 	chdir("~/");
@@ -216,12 +217,6 @@ void create_daemon()
 	{
 		printf("Error: fd 0|%d 1|%d 2|%d\n", fd_0, fd_1, fd_2);
 	}//end if
-
-
-//Register signal handlers
-	signal(SIGTERM, sigterm_handler);
-	signal(SIGUSR1, sigusr1_handler);
-	signal(SIGUSR2, sigusr2_handler);
 }//end create_daemon
 
 
@@ -230,7 +225,7 @@ int main()
 //Rememeber the working directory
 	getcwd(cwd, sizeof(cwd));
 	strcat(cwd, "/mole\0");
-	printf("cwd: %s\n", cwd);
+
 //Seed srand
 	srand(time(NULL));
 
