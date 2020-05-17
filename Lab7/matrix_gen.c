@@ -1,8 +1,10 @@
 //a program that creates a file of integers that represents a NxN matrix.
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-int next;
+unsigned int next;
 
 //Generates random number
 int rand()
@@ -12,7 +14,7 @@ int rand()
 }//end rand
 
 //Seeds srand
-void srand(int seed)
+void srand(unsigned int seed)
 {
 	next = seed;
 }//end srand
@@ -21,29 +23,34 @@ void srand(int seed)
 int main(int argc, char** argv)
 {
 //Variables
-	FILE* fp;
-	int num, size_1, size_2;
+	int num, size;
+
+//Check the number of args
+	if(argc != 2)
+	{
+		printf("Error: Argc != 2\n");
+		exit(EXIT_SUCCESS);
+	}//end if
 
 //Converts args into ints
+	size = atoi(argv[1]);
 
 //Seed srand
 	srand(time(NULL));
 
-//Open file
-	fp = fopen("file.txt", "a");
-
 //For size x size integers
-	for(int i = 0; i < (size_1 * size_2); i++)
+	for(int i = 0; i < size; i++)
 	{
-	//Generate random numbers from -100 to 100
-		num = ((rand() % 200) + 1) - 100;
+		for(int j = 0; j < size - 1; j++)
+		{
+		//Generate random numbers from -100 to 100
+			num = ((rand() % 200) + 1) - 100;
 
-	//Write to file
-		fputs(fp, num, "a");
+		//Write to file
+			printf("%d ", num);
+		}//end for
+
+		printf("%d\n", num);
 	}//end for
-
-//close file
-	fclose(fp);
-
 	return 0;
 }//end main
