@@ -7,7 +7,7 @@
 
 unsigned int next;
 
-//void matrix_add(int block[][size], int size, int scalar);
+void matrix_add(int block[][size], int size, int scalar);
 
 
 int rand()
@@ -22,43 +22,50 @@ void srand(unsigned int seed)
 }//end srand
 
 
-//void matrix_add(int[][size] block, int size, int scalar)
-//{
-//	for(int i = 0; i < size; i++)
-//	{
-//		for(int j = 0; j < size; j++)
-//		{
-//			block[i][j] += scalar;
-//		}//end for
-//	}//end for
-//}//end matrix_add
+void matrix_add(int block[][], int size, int scalar)
+{
+	for(int i = 0; i < size; i++)
+	{
+		for(int j = 0; j < size; j++)
+		{
+			block[i][j] += scalar;
+		}//end for
+	}//end for
+}//end matrix_add
 
 
 int main(int argc, char** argv)
 {
 //Variables
-	time_t start, stop;
-	int size, blocks;
-	int[][size] block;
-	struct aiocb* read_buf;
-	struct aiocb* write_buf;
+	int size = atoi(argv[1]);
+	int blocks = atoi(argv[2]);
 
+	int[][] read_buf;
+	int[][] write_buf;
+
+	time_t start, stop;
 	int scalar = rand();
 	int block_size = size / blocks;
 
 //Get start time
 	time(&start);
 
-	for(int i = 0; i < blocks; i++)
+	for(int x = 1; x < blocks; x++)
 	{
-		for(int j = 0; j < blocks; j++)
+		for(int y = 1; y < blocks; y++)
 		{
 		//async read request matrix[x, y]
-			block = aio_read(fp_1, read_buf);
+			aio_read();
 
-//			matrix_add(block, block_size, scalar);
+		//Read to block
+			int block[x][y] = read(fp_1, read_buf, "a");
 
-			aio_write(write_buf);
+			matrix_add(block, block_size, scalar);
+
+		//Async write request block
+			aio_write(fp_2, write_buf, "a");
+
+		//Async write return block
 
 		}//end for
 	}//end for
@@ -67,7 +74,7 @@ int main(int argc, char** argv)
 	time(&stop);
 
 //Output the total amount of time for the process
-	printf("Total time: %ld\n", (stop - start));
+	fprintf(stderr, "Total time: %ld\n", (stop - start));
 
 	return 0;
 }//end main
