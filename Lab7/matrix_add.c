@@ -2,12 +2,11 @@
 //and emits the amount of time to perform the operation on standard error.
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include <aio.h>
 
-unsigned int next;
-
-void matrix_add(int block[][size], int size, int scalar);
+unsigned int next, N;
 
 
 int rand()
@@ -22,7 +21,7 @@ void srand(unsigned int seed)
 }//end srand
 
 
-void matrix_add(int block[][], int size, int scalar)
+void matrix_add(int block[][N], int size, int scalar)
 {
 	for(int i = 0; i < size; i++)
 	{
@@ -38,14 +37,23 @@ int main(int argc, char** argv)
 {
 //Variables
 	int size = atoi(argv[1]);
+	N = size;
 	int blocks = atoi(argv[2]);
-
-	int[][] read_buf;
-	int[][] write_buf;
 
 	time_t start, stop;
 	int scalar = rand();
 	int block_size = size / blocks;
+	int block[block_size][block_size];
+
+	struct aiocb* ptr;
+
+//Check number of arguements
+	if(argc != 3)
+	{
+		printf("Error: Args != 3\n");
+		exit(EXIT_SUCCESS);
+	}//end if
+
 
 //Get start time
 	time(&start);
@@ -54,18 +62,17 @@ int main(int argc, char** argv)
 	{
 		for(int y = 1; y < blocks; y++)
 		{
-		//async read request matrix[x, y]
-			aio_read();
+		//Async read request matrix[x, y]
 
 		//Read to block
-			int block[x][y] = read(fp_1, read_buf, "a");
+			block[x][y] = aio_read(ptr);
 
 			matrix_add(block, block_size, scalar);
 
 		//Async write request block
-			aio_write(fp_2, write_buf, "a");
 
 		//Async write return block
+			aio_write(ptr);
 
 		}//end for
 	}//end for
