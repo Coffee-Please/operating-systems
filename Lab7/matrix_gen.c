@@ -47,10 +47,10 @@ int main(int argc, char** argv)
 			num = ((rand() % 200) + 1) - 100;
 
 		//Write to file
-			printf("%d ", num);
+			fprintf(stdout, "%d ", num);
 		}//end for
 
-		printf("%d\n", num);
+		fprintf(stdout, "%d\n", num);
 	}//end for
 	return 0;
 }//end main
